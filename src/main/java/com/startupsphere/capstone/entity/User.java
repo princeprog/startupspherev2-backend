@@ -43,6 +43,15 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private Date updatedAt;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookmarkEntity> bookmarks;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LikeEntity> likes;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ViewEntity> views;
+
     public User() {
     }
 
@@ -145,5 +154,32 @@ public class User implements UserDetails {
 
     public Date getUpdatedAt() {
         return updatedAt;
+    }
+
+    public List<BookmarkEntity> getBookmarks() {
+        return bookmarks;
+    }
+
+    public User setBookmarks(List<BookmarkEntity> bookmarks) {
+        this.bookmarks = bookmarks;
+        return this;
+    }
+
+    public List<LikeEntity> getLikes() {
+        return likes;
+    }
+
+    public User setLikes(List<LikeEntity> likes) {
+        this.likes = likes;
+        return this;
+    }
+
+    public List<ViewEntity> getViews() {
+        return views;
+    }
+
+    public User setViews(List<ViewEntity> views) {
+        this.views = views;
+        return this;
     }
 }
