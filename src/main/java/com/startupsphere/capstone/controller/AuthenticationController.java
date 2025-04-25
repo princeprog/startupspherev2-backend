@@ -46,16 +46,14 @@ public class AuthenticationController {
                 .httpOnly(true)
                 .secure(true) // Set to true if using HTTPS
                 .path("/")
-                .maxAge(jwtService.getExpirationTime() / 1000) // Convert milliseconds to seconds
-                .build();
+                .build(); // No expiration since the token has no expiry
 
         // Add the cookie to the response
         response.addHeader("Set-Cookie", cookie.toString());
 
         // Return the response body (optional)
         LoginResponse loginResponse = new LoginResponse()
-                .setToken(jwtToken)
-                .setExpiresIn(jwtService.getExpirationTime());
+                .setToken(jwtToken); // No expiration time to set
 
         return ResponseEntity.ok(loginResponse);
     }
