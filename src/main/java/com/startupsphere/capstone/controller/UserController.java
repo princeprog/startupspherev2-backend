@@ -32,8 +32,19 @@ public class UserController {
 
     @GetMapping("/")
     public ResponseEntity<List<User>> allUsers() {
-        List <User> users = userService.allUsers();
+        List<User> users = userService.allUsers();
 
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/is-logged-in")
+    public ResponseEntity<Boolean> isLoggedIn() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isAuthenticated = authentication != null && authentication.isAuthenticated()
+                && !(authentication.getPrincipal() instanceof String
+                        && authentication.getPrincipal().equals("anonymousUser"));
+
+        return ResponseEntity.ok(isAuthenticated);
     }
 }

@@ -2,6 +2,9 @@ package com.startupsphere.capstone.controller;
 
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,5 +73,16 @@ public class AuthenticationController {
         response.addHeader("Set-Cookie", cookie.toString());
 
         return ResponseEntity.noContent().build(); // Return 204 No Content
+    }
+
+    @GetMapping("/check")
+    public ResponseEntity<Boolean> checkAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Check if the user is authenticated
+        boolean isAuthenticated = authentication != null && authentication.isAuthenticated()
+                && !(authentication.getPrincipal() instanceof String && authentication.getPrincipal().equals("anonymousUser"));
+
+        return ResponseEntity.ok(isAuthenticated);
     }
 }
