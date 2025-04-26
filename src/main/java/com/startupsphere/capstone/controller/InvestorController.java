@@ -20,7 +20,7 @@ public class InvestorController {
         this.investorService = investorService;
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<Investor>> getAllInvestors() {
         return ResponseEntity.ok(investorService.getAllInvestors());
     }
@@ -30,7 +30,7 @@ public class InvestorController {
         return ResponseEntity.ok(investorService.getInvestorById(id));
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Investor> createInvestor(@RequestBody Investor investor) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal(); // Authenticated user from Spring Security
