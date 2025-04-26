@@ -1,9 +1,8 @@
 package com.startupsphere.capstone.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class Startup {
@@ -11,6 +10,9 @@ public class Startup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment ID
     private Long id;
+
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL)
+    private List<Like> likes;
 
     private String companyName;
     private String companyDescription;

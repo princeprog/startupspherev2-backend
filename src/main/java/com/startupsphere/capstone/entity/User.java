@@ -20,6 +20,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Integer id;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Like> likes;
+
     @Column(nullable = false)
     private String firstname;
 
