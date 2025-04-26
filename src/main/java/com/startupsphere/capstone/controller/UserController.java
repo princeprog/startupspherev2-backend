@@ -35,22 +35,8 @@ public class UserController {
 
     @GetMapping("/")
     public ResponseEntity<List<User>> allUsers() {
-        List <User> users = userService.allUsers();
+        List<User> users = userService.allUsers();
 
         return ResponseEntity.ok(users);
     }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(id, user));
-    }
-
-    @PutMapping("/{id}/password")
-    public ResponseEntity<String> updatePassword(@PathVariable Integer id, @RequestBody Map<String, String> body) {
-        String newPassword = body.get("newPassword");
-        userService.updatePassword(id, newPassword);
-        return ResponseEntity.ok("Password updated successfully.");
-    }
-        
-
 }
