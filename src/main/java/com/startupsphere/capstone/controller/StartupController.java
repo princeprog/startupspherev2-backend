@@ -29,6 +29,12 @@ public class StartupController {
         return ResponseEntity.ok(startups);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Startup>> searchStartups(@RequestParam String query) {
+        List<Startup> startups = startupService.searchStartups(query);
+        return ResponseEntity.ok(startups);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Startup> getStartupById(@PathVariable Long id) {
         return startupService.getStartupById(id)
