@@ -44,4 +44,8 @@ public class StartupService {
             throw new RuntimeException("Startup with ID " + id + " not found");
         }
     }
+
+    public List<Startup> searchStartups(String query) {
+        return startupRepository.findByCompanyNameContainingIgnoreCase(query);
+    }
 }

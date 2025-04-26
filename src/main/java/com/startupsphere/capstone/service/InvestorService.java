@@ -57,4 +57,8 @@ public class InvestorService {
     public void deleteInvestor(Integer id) {
         investorRepository.deleteById(id);
     }
+
+    public List<Investor> searchInvestors(String query) {
+        return investorRepository.findByFirstnameContainingIgnoreCaseOrLastnameContainingIgnoreCase(query, query);
+    }
 }
