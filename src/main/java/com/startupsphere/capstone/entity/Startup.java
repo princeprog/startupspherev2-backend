@@ -1,7 +1,9 @@
 package com.startupsphere.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -13,6 +15,10 @@ public class Startup {
 
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL)
     private List<Like> likes;
+
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Bookmarks> bookmarks = new ArrayList<>();
+
 
     private String companyName;
     private String companyDescription;
@@ -256,4 +262,13 @@ public class Startup {
     public void setStartupCode(String startupCode) {
         this.startupCode = startupCode;
     }
+
+    public List<Bookmarks> getBookmarks() {
+        return bookmarks;
+    }
+
+    public void setBookmarks(List<Bookmarks> bookmarks) {
+        this.bookmarks = bookmarks;
+    }
+
 }

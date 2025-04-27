@@ -1,6 +1,10 @@
 package com.startupsphere.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "investors")
 @Entity
@@ -10,6 +14,10 @@ public class Investor {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "investorId", nullable = false)
     private Integer investor_id;
+
+    @OneToMany(mappedBy = "investor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Bookmarks> bookmarks = new ArrayList<>();
+
 
     @Column(nullable = false)
     private String firstname;
@@ -102,7 +110,13 @@ public class Investor {
     this.user_id = user_id;
 }*/
 
+    public List<Bookmarks> getBookmarks() {
+        return bookmarks;
+    }
 
+    public void setBookmarks(List<Bookmarks> bookmarks) {
+        this.bookmarks = bookmarks;
+    }
 
     public Integer getInvestorId() {
         return investor_id;
@@ -263,5 +277,6 @@ public class Investor {
     
     public void setUserId(User user_id) {
         this.user_id = user_id;
-    }    
+    }
+
 }

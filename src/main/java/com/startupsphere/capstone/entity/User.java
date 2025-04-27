@@ -1,5 +1,6 @@
 package com.startupsphere.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -7,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -22,6 +24,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Like> likes;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true,  fetch = FetchType.EAGER)
+    private List<Bookmarks> bookmarks = new ArrayList<>();
 
     @Column(nullable = false)
     private String firstname;
@@ -149,4 +154,13 @@ public class User implements UserDetails {
     public Date getUpdatedAt() {
         return updatedAt;
     }
+
+    public List<Bookmarks> getBookmarks() {
+        return bookmarks;
+    }
+
+    public void setBookmarks(List<Bookmarks> bookmarks) {
+        this.bookmarks = bookmarks;
+    }
+
 }
