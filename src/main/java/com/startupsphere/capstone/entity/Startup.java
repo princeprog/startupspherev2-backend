@@ -16,6 +16,7 @@ public class Startup {
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL)
     private List<Like> likes;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Bookmarks> bookmarks = new ArrayList<>();
 
