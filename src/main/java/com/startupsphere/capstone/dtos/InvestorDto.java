@@ -1,6 +1,7 @@
 package com.startupsphere.capstone.dtos;
 
 public class InvestorDto {
+    private Integer id;
     private String firstname;
     private String lastname;
     private String emailAddress;
@@ -22,6 +23,12 @@ public class InvestorDto {
     private Integer userId;
 
 
+    public Integer getId() {
+        return id;
+    }
+    public void setId(Integer id) {
+        this.id = id;
+    }
     public String getFirstname() {
         return firstname;
     }
