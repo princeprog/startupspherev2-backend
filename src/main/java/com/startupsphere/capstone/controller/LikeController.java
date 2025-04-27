@@ -1,5 +1,6 @@
 package com.startupsphere.capstone.controller;
 
+import com.startupsphere.capstone.dtos.LikeRequest;
 import com.startupsphere.capstone.entity.Investor;
 import com.startupsphere.capstone.entity.Like;
 import com.startupsphere.capstone.entity.Startup;
@@ -31,16 +32,32 @@ public class LikeController {
     private InvestorRepository investorRepository;
 
     @PostMapping
-    public Like createLike(@RequestParam Integer userId,
-                           @RequestParam Long startupId,
-                           @RequestParam Integer investor_Id) {
+    public Like createLike(@RequestBody LikeRequest likeRequest) {
+        // Validate the request
+        likeRequest.validate();
+
+        // Extract data from the request
+        Integer userId = likeRequest.getUserId();
+        Long startupId = likeRequest.getStartupId();
+        Integer investorId = likeRequest.getInvestorId();
+
+        // Fetch user, startup, and investor from the database
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Startup startup = startupRepository.findById(startupId)
-                .orElseThrow(() -> new RuntimeException("Startup not found"));
-        Investor investor = investorRepository.findById(investor_Id)
-                .orElseThrow(() -> new RuntimeException("Investor not found"));
 
+        Startup startup = null;
+        if (startupId != null) {
+            startup = startupRepository.findById(startupId)
+                    .orElseThrow(() -> new RuntimeException("Startup not found"));
+        }
+
+        Investor investor = null;
+        if (investorId != null) {
+            investor = investorRepository.findById(investorId)
+                    .orElseThrow(() -> new RuntimeException("Investor not found"));
+        }
+
+        // Create and save the Like entity
         Like like = new Like();
         like.setUser(user);
         like.setStartup(startup);
