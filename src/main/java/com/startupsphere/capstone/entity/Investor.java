@@ -15,6 +15,7 @@ public class Investor {
     @Column(name = "investorId", nullable = false)
     private Integer investor_id;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "investor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Bookmarks> bookmarks = new ArrayList<>();
 

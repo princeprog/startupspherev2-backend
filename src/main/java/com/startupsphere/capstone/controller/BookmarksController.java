@@ -1,5 +1,6 @@
 package com.startupsphere.capstone.controller;
 
+import com.startupsphere.capstone.dtos.BookmarksRequest;
 import com.startupsphere.capstone.entity.Bookmarks;
 import com.startupsphere.capstone.entity.Investor;
 import com.startupsphere.capstone.entity.Startup;
@@ -8,8 +9,10 @@ import com.startupsphere.capstone.repository.InvestorRepository;
 import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.repository.UserRepository;
 import com.startupsphere.capstone.service.BookmarksService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 
 @RestController
@@ -33,14 +36,12 @@ public class BookmarksController {
     }
 
     @PostMapping
-    public Bookmarks createBookmark(@RequestParam Integer userId,
-                                    @RequestParam Long startupId,
-                                    @RequestParam Integer investor_Id) {
-        User user = userRepository.findById(userId)
+    public ResponseEntity<Bookmarks> createBookmark(@RequestBody BookmarksRequest request) {
+        User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Startup startup = startupRepository.findById(startupId)
+        Startup startup = startupRepository.findById(request.getStartupId())
                 .orElseThrow(() -> new RuntimeException("Startup not found"));
-        Investor investor = investorRepository.findById(investor_Id)
+        Investor investor = investorRepository.findById(request.getInvestorId())
                 .orElseThrow(() -> new RuntimeException("Investor not found"));
 
         Bookmarks bookmark = new Bookmarks();
@@ -48,16 +49,17 @@ public class BookmarksController {
         bookmark.setStartup(startup);
         bookmark.setInvestor(investor);
 
-        return bookmarksService.createBookmark(bookmark);
+        return ResponseEntity.ok(bookmarksService.createBookmark(bookmark));
     }
 
     @GetMapping
-    public List<Bookmarks> getAllBookmarks() {
-        return bookmarksService.getAllBookmarks();
+    public ResponseEntity<List<Bookmarks>> getAllBookmarks() {
+        return ResponseEntity.ok(bookmarksService.getAllBookmarks());
     }
 
     @DeleteMapping("/{id}")
-    public void deleteBookmark(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBookmark(@PathVariable Long id) {
         bookmarksService.deleteBookmark(id);
+        return ResponseEntity.noContent().build();
     }
 }
