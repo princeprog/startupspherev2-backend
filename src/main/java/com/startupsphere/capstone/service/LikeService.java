@@ -14,8 +14,32 @@ public class LikeService {
     @Autowired
     private LikeRepository likeRepository;
 
-    public Like createLike(Like like) {
-        return likeRepository.save(like);
+    public String toggleLike(Like like) {
+        // Check if the like already exists for a startup
+        if (like.getStartup() != null) {
+            Optional<Like> existingLike = likeRepository.findByUserIdAndStartupId(
+                    like.getUser().getId(), like.getStartup().getId());
+            if (existingLike.isPresent()) {
+                // If the like exists, delete it (unlike)
+                likeRepository.delete(existingLike.get());
+                return "Like removed"; // Return a message indicating the like was removed
+            }
+        }
+
+        // Check if the like already exists for an investor
+        if (like.getInvestor() != null) {
+            Optional<Like> existingLike = likeRepository.findByUserIdAndInvestor_InvestorId(
+                    like.getUser().getId(), like.getInvestor().getInvestorId());
+            if (existingLike.isPresent()) {
+                // If the like exists, delete it (unlike)
+                likeRepository.delete(existingLike.get());
+                return "Like removed"; // Return a message indicating the like was removed
+            }
+        }
+
+        // If no existing like is found, save the new like
+        likeRepository.save(like);
+        return "Like added"; // Return a message indicating the like was added
     }
 
     public List<Like> getAllLikes() {
@@ -29,4 +53,6 @@ public class LikeService {
     public void deleteLike(Long id) {
         likeRepository.deleteById(id);
     }
+
+    
 }

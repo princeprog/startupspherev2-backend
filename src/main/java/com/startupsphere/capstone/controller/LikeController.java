@@ -10,9 +10,11 @@ import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.repository.UserRepository;
 import com.startupsphere.capstone.service.LikeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -32,16 +34,13 @@ public class LikeController {
     private InvestorRepository investorRepository;
 
     @PostMapping
-    public Like createLike(@RequestBody LikeRequest likeRequest) {
-        // Validate the request
+    public ResponseEntity<Object> toggleLike(@RequestBody LikeRequest likeRequest) {
         likeRequest.validate();
 
-        // Extract data from the request
         Integer userId = likeRequest.getUserId();
         Long startupId = likeRequest.getStartupId();
         Integer investorId = likeRequest.getInvestorId();
 
-        // Fetch user, startup, and investor from the database
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -57,13 +56,16 @@ public class LikeController {
                     .orElseThrow(() -> new RuntimeException("Investor not found"));
         }
 
-        // Create and save the Like entity
         Like like = new Like();
         like.setUser(user);
         like.setStartup(startup);
         like.setInvestor(investor);
 
-        return likeService.createLike(like);
+        // Toggle the like (like or unlike)
+        String result = likeService.toggleLike(like);
+
+        // Return the result as a JSON response
+        return ResponseEntity.ok(Map.of("message", result));
     }
 
     @GetMapping

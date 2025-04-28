@@ -3,8 +3,13 @@ package com.startupsphere.capstone.entity;
 import jakarta.persistence.*;
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
-@Table(name = "likes")
+@Table(name = "likes", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"userId", "startupId"}),
+    @UniqueConstraint(columnNames = {"userId", "investorId"})
+})
 public class Like {
 
     @Id
@@ -15,14 +20,17 @@ public class Like {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
+    @JsonIgnore 
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "startupId")
+    @JsonIgnore 
     private Startup startup;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "investorId")
+    @JoinColumn(name = "investorId", referencedColumnName = "investorId")
+    @JsonIgnore 
     private Investor investor;
 
     @PrePersist
