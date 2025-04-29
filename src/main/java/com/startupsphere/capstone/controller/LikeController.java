@@ -69,8 +69,16 @@ public class LikeController {
     }
 
     @GetMapping
-    public List<Like> getAllLikes() {
-        return likeService.getAllLikes();
+    public List<LikeRequest> getAllLikes() {
+        return likeService.getAllLikes().stream().map(like -> {
+            LikeRequest dto = new LikeRequest();
+            dto.setId(like.getId());
+            dto.setTimestamp(like.getTimestamp());
+            dto.setUserId(like.getUser() != null ? like.getUser().getId() : null);
+            dto.setStartupId(like.getStartup() != null ? like.getStartup().getId() : null);
+            dto.setInvestorId(like.getInvestor() != null ? like.getInvestor().getInvestorId() : null);
+            return dto;
+        }).toList();
     }
 
     @GetMapping("/{id}")
