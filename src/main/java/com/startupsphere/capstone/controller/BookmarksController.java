@@ -38,18 +38,14 @@ public class BookmarksController {
 
     @PostMapping
     public ResponseEntity<Bookmarks> createBookmark(@RequestBody BookmarksRequest request) {
-        // Get the currently authenticated user
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
-
-        // Find the startup and investor based on the request
         Startup startup = startupRepository.findById(request.getStartupId())
                 .orElseThrow(() -> new RuntimeException("Startup not found"));
         Investor investor = investorRepository.findById(request.getInvestorId())
                 .orElseThrow(() -> new RuntimeException("Investor not found"));
 
-        // Create and save the bookmark
         Bookmarks bookmark = new Bookmarks();
         bookmark.setUser(user);
         bookmark.setStartup(startup);
