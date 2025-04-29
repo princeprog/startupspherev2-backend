@@ -13,7 +13,7 @@ public class Investor {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "investorId", nullable = false)
-    private Integer investor_id;
+    private Integer investorId;
 
     @JsonIgnore
     @OneToMany(mappedBy = "investor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -120,11 +120,11 @@ public class Investor {
     }
 
     public Integer getInvestorId() {
-        return investor_id;
+        return investorId;
     }
     
     public void setInvestorId(Integer investorId) {
-        this.investor_id = investorId;
+        this.investorId = investorId;
     }
     
     public String getFirstname() {
