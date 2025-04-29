@@ -61,4 +61,17 @@ public class InvestorService {
     public List<Investor> searchInvestors(String query) {
         return investorRepository.findByFirstnameContainingIgnoreCaseOrLastnameContainingIgnoreCase(query, query);
     }
+
+    public int getViewsByUserId(Integer userId) {
+        Investor investor = investorRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Investor not found with userId: " + userId));
+        return investor.getViews();
+    }
+
+    public void incrementViewsByUserId(Integer userId) {
+        Investor investor = investorRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Investor not found with userId: " + userId));
+        investor.setViews(investor.getViews() + 1);
+        investorRepository.save(investor);
+    }
 }
