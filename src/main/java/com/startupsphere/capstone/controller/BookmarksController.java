@@ -10,6 +10,7 @@ import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.repository.UserRepository;
 import com.startupsphere.capstone.service.BookmarksService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,9 +27,9 @@ public class BookmarksController {
 
     @Autowired
     public BookmarksController(BookmarksService bookmarksService,
-                               UserRepository userRepository,
-                               StartupRepository startupRepository,
-                               InvestorRepository investorRepository) {
+            UserRepository userRepository,
+            StartupRepository startupRepository,
+            InvestorRepository investorRepository) {
         this.bookmarksService = bookmarksService;
         this.userRepository = userRepository;
         this.startupRepository = startupRepository;
@@ -37,13 +38,18 @@ public class BookmarksController {
 
     @PostMapping
     public ResponseEntity<Bookmarks> createBookmark(@RequestBody BookmarksRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        // Get the currently authenticated user
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        // Find the startup and investor based on the request
         Startup startup = startupRepository.findById(request.getStartupId())
                 .orElseThrow(() -> new RuntimeException("Startup not found"));
         Investor investor = investorRepository.findById(request.getInvestorId())
                 .orElseThrow(() -> new RuntimeException("Investor not found"));
 
+        // Create and save the bookmark
         Bookmarks bookmark = new Bookmarks();
         bookmark.setUser(user);
         bookmark.setStartup(startup);

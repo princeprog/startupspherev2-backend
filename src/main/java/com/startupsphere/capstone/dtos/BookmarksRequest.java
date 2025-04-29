@@ -1,19 +1,10 @@
 package com.startupsphere.capstone.dtos;
 
 public class BookmarksRequest {
-    private Integer userId;
     private Long startupId;
     private Integer investorId;
 
     // Getters and Setters
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
     public Long getStartupId() {
         return startupId;
     }
