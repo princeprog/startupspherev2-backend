@@ -25,6 +25,9 @@ public class BookmarksService {
     }
 
     public void deleteBookmark(Long id) {
-        bookmarksRepository.deleteById(id);
+        Bookmarks bookmark = bookmarksRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Bookmark not found with id: " + id));
+        bookmarksRepository.delete(bookmark);
     }
+    
 }
