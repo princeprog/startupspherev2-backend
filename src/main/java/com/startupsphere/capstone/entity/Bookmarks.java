@@ -13,19 +13,14 @@ public class Bookmarks {
 
     private Instant timestamp = Instant.now();
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "users")
+      @ManyToOne(cascade = CascadeType.ALL) // Adjust as necessary
     private User user;
 
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "startupId", nullable = true)
+    @ManyToOne(cascade = CascadeType.ALL) // Adjust as necessary
     private Startup startup;
 
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "investorId", nullable = true)
+    @ManyToOne(cascade = CascadeType.ALL) // Adjust as necessary
     private Investor investor;
-
-
     // --- Constructors ---
 
     public Bookmarks() {
