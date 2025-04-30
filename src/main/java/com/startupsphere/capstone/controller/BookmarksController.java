@@ -38,11 +38,9 @@ public class BookmarksController {
 
     @PostMapping
     public ResponseEntity<Bookmarks> createBookmark(@RequestBody BookmarksRequest request) {
-        // Get the currently authenticated user
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
-    
         Startup startup = null;
         Investor investor = null;
     

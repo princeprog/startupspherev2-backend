@@ -1,11 +1,33 @@
 package com.startupsphere.capstone.dtos;
 
-public class LikeRequest {
-    private Integer userId;
-    private Long startupId; // Optional
-    private Integer investorId; // Optional
+import java.time.Instant;
 
-    // Getters and setters
+public class LikeRequest {
+    private Long id;
+    private Instant timestamp;
+    private Integer userId;
+    private Long startupId;
+    private Integer investorId;
+
+    public LikeRequest(Long id, Instant timestamp, Integer userId, Long startupId, Integer investorId) {
+        this.id = id;
+        this.timestamp = timestamp;
+        this.userId = userId;
+        this.startupId = startupId;
+        this.investorId = investorId;
+    }
+
+    public LikeRequest() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
     public Integer getUserId() {
         return userId;
     }
@@ -28,6 +50,14 @@ public class LikeRequest {
 
     public void setInvestorId(Integer investorId) {
         this.investorId = investorId;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTimestamp(Instant timestamp) {
+        this.timestamp = timestamp;
     }
 
     // Custom validation method

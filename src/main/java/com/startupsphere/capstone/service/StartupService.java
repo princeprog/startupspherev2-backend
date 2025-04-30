@@ -48,4 +48,18 @@ public class StartupService {
     public List<Startup> searchStartups(String query) {
         return startupRepository.findByCompanyNameContainingIgnoreCase(query);
     }
+
+    public int getViewsByStartupId(Long startupId) {
+        Startup startup = startupRepository.findById(startupId)
+                .orElseThrow(() -> new RuntimeException("Startup not found with id: " + startupId));
+        return startup.getViewsCount();
+    }
+
+    // Increment views by startup ID
+    public void incrementViews(Long startupId) {
+        Startup startup = startupRepository.findById(startupId)
+                .orElseThrow(() -> new RuntimeException("Startup not found with id: " + startupId));
+        startup.setViewsCount(startup.getViewsCount() + 1);
+        startupRepository.save(startup); // Save updated startup
+    }
 }

@@ -2,7 +2,6 @@ package com.startupsphere.capstone.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,9 +9,10 @@ import java.util.List;
 public class Startup {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment ID
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL)
     private List<Like> likes;
 
@@ -20,6 +20,8 @@ public class Startup {
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Bookmarks> bookmarks = new ArrayList<>();
 
+    @Column(name = "views_count", nullable = false)
+    private Integer viewsCount = 0;
 
     private String companyName;
     private String companyDescription;
@@ -31,7 +33,7 @@ public class Startup {
     private String streetAddress;
     private String country;
     private String city;
-    private String state;
+    private String province;
     private String postalCode;
     private String industry;
     private String website;
@@ -44,16 +46,16 @@ public class Startup {
     private String locationName;
     private String startupCode;
 
-    // Default constructor (no initialization)
+    // Default constructor
     public Startup() {
     }
 
-    // Constructor with all fields
+    // All-args constructor
     public Startup(Long id, String companyName, String companyDescription, String foundedDate, String typeOfCompany,
-                   String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress,
-                   String country, String city, String state, String postalCode, String industry, String website,
-                   String facebook, String twitter, String instagram, String linkedIn, Double locationLat,
-                   Double locationLng, String locationName, String startupCode) {
+            String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress,
+            String country, String city, String province, String postalCode, String industry, String website,
+            String facebook, String twitter, String instagram, String linkedIn, Double locationLat,
+            Double locationLng, String locationName, String startupCode) {
         this.id = id;
         this.companyName = companyName;
         this.companyDescription = companyDescription;
@@ -65,7 +67,7 @@ public class Startup {
         this.streetAddress = streetAddress;
         this.country = country;
         this.city = city;
-        this.state = state;
+        this.province = province;
         this.postalCode = postalCode;
         this.industry = industry;
         this.website = website;
@@ -77,6 +79,7 @@ public class Startup {
         this.locationLng = locationLng;
         this.locationName = locationName;
         this.startupCode = startupCode;
+        this.viewsCount = 0;
     }
 
     // Getters and Setters
@@ -86,6 +89,22 @@ public class Startup {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public List<Like> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(List<Like> likes) {
+        this.likes = likes;
+    }
+
+    public List<Bookmarks> getBookmarks() {
+        return bookmarks;
+    }
+
+    public void setBookmarks(List<Bookmarks> bookmarks) {
+        this.bookmarks = bookmarks;
     }
 
     public String getCompanyName() {
@@ -168,12 +187,12 @@ public class Startup {
         this.city = city;
     }
 
-    public String getState() {
-        return state;
+    public String getProvince() {
+        return province;
     }
 
-    public void setState(String state) {
-        this.state = state;
+    public void setProvince(String province) {
+        this.province = province;
     }
 
     public String getPostalCode() {
@@ -264,12 +283,12 @@ public class Startup {
         this.startupCode = startupCode;
     }
 
-    public List<Bookmarks> getBookmarks() {
-        return bookmarks;
+    public Integer getViewsCount() {
+        return (viewsCount == null) ? 0 : viewsCount; // Return 0 if null
     }
 
-    public void setBookmarks(List<Bookmarks> bookmarks) {
-        this.bookmarks = bookmarks;
+    public void setViewsCount(int viewsCount) {
+        this.viewsCount = viewsCount;
     }
 
 }

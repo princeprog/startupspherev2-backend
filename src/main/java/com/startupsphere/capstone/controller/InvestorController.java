@@ -1,23 +1,32 @@
 package com.startupsphere.capstone.controller;
 
 import com.startupsphere.capstone.entity.Investor;
+import com.startupsphere.capstone.entity.Startup;
 import com.startupsphere.capstone.entity.User;
+import com.startupsphere.capstone.repository.InvestorRepository;
 import com.startupsphere.capstone.service.InvestorService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/investors")
 public class InvestorController {
 
     private final InvestorService investorService;
+    private final InvestorRepository investorRepository; // Add this line
 
-    public InvestorController(InvestorService investorService) {
+    // Modify the constructor to inject InvestorRepository as well
+    @Autowired
+    public InvestorController(InvestorService investorService, InvestorRepository investorRepository) {
         this.investorService = investorService;
+        this.investorRepository = investorRepository; // Assign it in the constructor
     }
 
     @GetMapping
@@ -55,5 +64,29 @@ public class InvestorController {
     public ResponseEntity<String> deleteInvestor(@PathVariable Integer id) {
         investorService.deleteInvestor(id);
         return ResponseEntity.ok("Investor deleted successfully.");
+    }
+
+    @GetMapping("/{id}/views")
+    public ResponseEntity<Integer> getViewsByInvestorId(@PathVariable Integer id) {
+        Optional<Investor> optionalInvestor = investorRepository.findById(id);
+        if (optionalInvestor.isPresent()) {
+            Investor investor = optionalInvestor.get();
+            return ResponseEntity.ok(investor.getViews());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}/increment-views")
+    public ResponseEntity<Integer> incrementViews(@PathVariable Integer id) {
+        Optional<Investor> optionalInvestor = investorRepository.findById(id);
+        if (optionalInvestor.isPresent()) {
+            Investor investor = optionalInvestor.get();
+            investor.setViews(investor.getViews() + 1);
+            investorRepository.save(investor);
+            return ResponseEntity.ok(investor.getViews());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
