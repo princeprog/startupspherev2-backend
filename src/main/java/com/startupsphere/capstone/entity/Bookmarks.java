@@ -17,12 +17,12 @@ public class Bookmarks {
     @JoinColumn(name = "users")
     private User user;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "startupId")
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "startupId", nullable = true)
     private Startup startup;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "investorId")
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "investorId", nullable = true)
     private Investor investor;
 
 
