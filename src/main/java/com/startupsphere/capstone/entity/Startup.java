@@ -20,6 +20,9 @@ public class Startup {
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Bookmarks> bookmarks = new ArrayList<>();
 
+    @Column(name = "views_count", nullable = false)
+    private Integer viewsCount = 0;
+
     private String companyName;
     private String companyDescription;
     private String foundedDate;
@@ -49,10 +52,10 @@ public class Startup {
 
     // All-args constructor
     public Startup(Long id, String companyName, String companyDescription, String foundedDate, String typeOfCompany,
-                   String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress,
-                   String country, String city, String province, String postalCode, String industry, String website,
-                   String facebook, String twitter, String instagram, String linkedIn, Double locationLat,
-                   Double locationLng, String locationName, String startupCode) {
+            String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress,
+            String country, String city, String province, String postalCode, String industry, String website,
+            String facebook, String twitter, String instagram, String linkedIn, Double locationLat,
+            Double locationLng, String locationName, String startupCode) {
         this.id = id;
         this.companyName = companyName;
         this.companyDescription = companyDescription;
@@ -76,81 +79,216 @@ public class Startup {
         this.locationLng = locationLng;
         this.locationName = locationName;
         this.startupCode = startupCode;
+        this.viewsCount = 0;
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public List<Like> getLikes() { return likes; }
-    public void setLikes(List<Like> likes) { this.likes = likes; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public List<Bookmarks> getBookmarks() { return bookmarks; }
-    public void setBookmarks(List<Bookmarks> bookmarks) { this.bookmarks = bookmarks; }
+    public List<Like> getLikes() {
+        return likes;
+    }
 
-    public String getCompanyName() { return companyName; }
-    public void setCompanyName(String companyName) { this.companyName = companyName; }
+    public void setLikes(List<Like> likes) {
+        this.likes = likes;
+    }
 
-    public String getCompanyDescription() { return companyDescription; }
-    public void setCompanyDescription(String companyDescription) { this.companyDescription = companyDescription; }
+    public List<Bookmarks> getBookmarks() {
+        return bookmarks;
+    }
 
-    public String getFoundedDate() { return foundedDate; }
-    public void setFoundedDate(String foundedDate) { this.foundedDate = foundedDate; }
+    public void setBookmarks(List<Bookmarks> bookmarks) {
+        this.bookmarks = bookmarks;
+    }
 
-    public String getTypeOfCompany() { return typeOfCompany; }
-    public void setTypeOfCompany(String typeOfCompany) { this.typeOfCompany = typeOfCompany; }
+    public String getCompanyName() {
+        return companyName;
+    }
 
-    public String getNumberOfEmployees() { return numberOfEmployees; }
-    public void setNumberOfEmployees(String numberOfEmployees) { this.numberOfEmployees = numberOfEmployees; }
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
 
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public String getCompanyDescription() {
+        return companyDescription;
+    }
 
-    public String getContactEmail() { return contactEmail; }
-    public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
+    public void setCompanyDescription(String companyDescription) {
+        this.companyDescription = companyDescription;
+    }
 
-    public String getStreetAddress() { return streetAddress; }
-    public void setStreetAddress(String streetAddress) { this.streetAddress = streetAddress; }
+    public String getFoundedDate() {
+        return foundedDate;
+    }
 
-    public String getCountry() { return country; }
-    public void setCountry(String country) { this.country = country; }
+    public void setFoundedDate(String foundedDate) {
+        this.foundedDate = foundedDate;
+    }
 
-    public String getCity() { return city; }
-    public void setCity(String city) { this.city = city; }
+    public String getTypeOfCompany() {
+        return typeOfCompany;
+    }
 
-    public String getProvince() { return province; }
-    public void setProvince(String province) { this.province = province; }
+    public void setTypeOfCompany(String typeOfCompany) {
+        this.typeOfCompany = typeOfCompany;
+    }
 
-    public String getPostalCode() { return postalCode; }
-    public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
+    public String getNumberOfEmployees() {
+        return numberOfEmployees;
+    }
 
-    public String getIndustry() { return industry; }
-    public void setIndustry(String industry) { this.industry = industry; }
+    public void setNumberOfEmployees(String numberOfEmployees) {
+        this.numberOfEmployees = numberOfEmployees;
+    }
 
-    public String getWebsite() { return website; }
-    public void setWebsite(String website) { this.website = website; }
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
 
-    public String getFacebook() { return facebook; }
-    public void setFacebook(String facebook) { this.facebook = facebook; }
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 
-    public String getTwitter() { return twitter; }
-    public void setTwitter(String twitter) { this.twitter = twitter; }
+    public String getContactEmail() {
+        return contactEmail;
+    }
 
-    public String getInstagram() { return instagram; }
-    public void setInstagram(String instagram) { this.instagram = instagram; }
+    public void setContactEmail(String contactEmail) {
+        this.contactEmail = contactEmail;
+    }
 
-    public String getLinkedIn() { return linkedIn; }
-    public void setLinkedIn(String linkedIn) { this.linkedIn = linkedIn; }
+    public String getStreetAddress() {
+        return streetAddress;
+    }
 
-    public Double getLocationLat() { return locationLat; }
-    public void setLocationLat(Double locationLat) { this.locationLat = locationLat; }
+    public void setStreetAddress(String streetAddress) {
+        this.streetAddress = streetAddress;
+    }
 
-    public Double getLocationLng() { return locationLng; }
-    public void setLocationLng(Double locationLng) { this.locationLng = locationLng; }
+    public String getCountry() {
+        return country;
+    }
 
-    public String getLocationName() { return locationName; }
-    public void setLocationName(String locationName) { this.locationName = locationName; }
+    public void setCountry(String country) {
+        this.country = country;
+    }
 
-    public String getStartupCode() { return startupCode; }
-    public void setStartupCode(String startupCode) { this.startupCode = startupCode; }
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public String getIndustry() {
+        return industry;
+    }
+
+    public void setIndustry(String industry) {
+        this.industry = industry;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public String getFacebook() {
+        return facebook;
+    }
+
+    public void setFacebook(String facebook) {
+        this.facebook = facebook;
+    }
+
+    public String getTwitter() {
+        return twitter;
+    }
+
+    public void setTwitter(String twitter) {
+        this.twitter = twitter;
+    }
+
+    public String getInstagram() {
+        return instagram;
+    }
+
+    public void setInstagram(String instagram) {
+        this.instagram = instagram;
+    }
+
+    public String getLinkedIn() {
+        return linkedIn;
+    }
+
+    public void setLinkedIn(String linkedIn) {
+        this.linkedIn = linkedIn;
+    }
+
+    public Double getLocationLat() {
+        return locationLat;
+    }
+
+    public void setLocationLat(Double locationLat) {
+        this.locationLat = locationLat;
+    }
+
+    public Double getLocationLng() {
+        return locationLng;
+    }
+
+    public void setLocationLng(Double locationLng) {
+        this.locationLng = locationLng;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getStartupCode() {
+        return startupCode;
+    }
+
+    public void setStartupCode(String startupCode) {
+        this.startupCode = startupCode;
+    }
+
+    public Integer getViewsCount() {
+        return (viewsCount == null) ? 0 : viewsCount; // Return 0 if null
+    }
+
+    public void setViewsCount(int viewsCount) {
+        this.viewsCount = viewsCount;
+    }
+
 }

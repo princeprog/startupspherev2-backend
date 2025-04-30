@@ -1,20 +1,24 @@
 package com.startupsphere.capstone.controller;
 
 import com.startupsphere.capstone.entity.Startup;
+import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.service.StartupService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/startups")
 public class StartupController {
 
     private final StartupService startupService;
+    private final StartupRepository startupRepository;
 
-    public StartupController(StartupService startupService) {
+    public StartupController(StartupService startupService, StartupRepository startupRepository) {
         this.startupService = startupService;
+        this.startupRepository = startupRepository;
     }
 
     @PostMapping
@@ -61,4 +65,30 @@ public class StartupController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/{id}/views")
+    public ResponseEntity<Integer> getViewsByStartupId(@PathVariable Long id) {
+        Optional<Startup> optionalStartup = startupRepository.findById(id);
+        if (optionalStartup.isPresent()) {
+            Startup startup = optionalStartup.get();
+            return ResponseEntity.ok(startup.getViewsCount());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Increment the views count for a specific startup
+    @PutMapping("/{id}/increment-views")
+    public ResponseEntity<Integer> incrementViews(@PathVariable Long id) {
+        Optional<Startup> optionalStartup = startupRepository.findById(id);
+        if (optionalStartup.isPresent()) {
+            Startup startup = optionalStartup.get();
+            startup.setViewsCount(startup.getViewsCount() + 1);
+            startupRepository.save(startup); // Save updated startup
+            return ResponseEntity.ok(startup.getViewsCount());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
