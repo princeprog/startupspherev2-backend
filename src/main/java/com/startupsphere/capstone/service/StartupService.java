@@ -62,4 +62,8 @@ public class StartupService {
         startup.setViewsCount(startup.getViewsCount() + 1);
         startupRepository.save(startup); // Save updated startup
     }
+
+    public void saveAll(List<Startup> startups) {
+        startupRepository.saveAll(startups);
+    }
 }

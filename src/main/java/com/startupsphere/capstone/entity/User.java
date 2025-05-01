@@ -24,6 +24,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Like> likes;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Startup> startups;
     
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true,  fetch = FetchType.EAGER)
@@ -108,7 +111,7 @@ public class User implements UserDetails {
         return this;
     }
 
-    public String getFirstname() {
+        public String getFirstname() {
         return firstname;
     }
 

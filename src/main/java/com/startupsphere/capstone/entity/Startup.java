@@ -12,6 +12,10 @@ public class Startup {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @JsonIgnore
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL)
     private List<Like> likes;
@@ -46,17 +50,39 @@ public class Startup {
     private String locationName;
     private String startupCode;
 
+    // New attributes
+    private double revenue;
+    private Double annualRevenue;
+    private Double paidUpCapital;
+    private String fundingStage; // e.g., Bootstrapped, Seed, Series A, etc.
+    private String businessActivity;
+    private String operatingHours;
+    private int numberOfActiveStartups;
+    private int numberOfNewStartupsThisYear;
+    private double averageStartupGrowthRate; // based on revenue, users, or valuation
+    private double startupSurvivalRate; // % of startups that survive >2 years
+    private double totalStartupFundingReceived; // aggregated funding
+    private double averageFundingPerStartup;
+    private int numberOfFundingRounds; // e.g., seed, Series A
+    private int numberOfStartupsWithForeignInvestment;
+    private double amountOfGovernmentGrantsOrSubsidiesReceived;
+    private int numberOfStartupIncubatorsOrAccelerators;
+    private int numberOfStartupsInIncubationPrograms;
+    private int numberOfMentorsOrAdvisorsInvolved;
+    private int publicPrivatePartnershipsInvolvingStartups;
+
     // Default constructor
     public Startup() {
     }
 
     // All-args constructor
-    public Startup(Long id, String companyName, String companyDescription, String foundedDate, String typeOfCompany,
-            String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress,
-            String country, String city, String province, String postalCode, String industry, String website,
-            String facebook, String twitter, String instagram, String linkedIn, Double locationLat,
-            Double locationLng, String locationName, String startupCode) {
+
+
+    public Startup(Long id, List<Like> likes, List<Bookmarks> bookmarks, Integer viewsCount, String companyName, String companyDescription, String foundedDate, String typeOfCompany, String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress, String country, String city, String province, String postalCode, String industry, String website, String facebook, String twitter, String instagram, String linkedIn, Double locationLat, Double locationLng, String locationName, String startupCode, double revenue, Double annualRevenue, Double paidUpCapital, String fundingStage, String businessActivity, String operatingHours, int numberOfActiveStartups, int numberOfNewStartupsThisYear, double averageStartupGrowthRate, double startupSurvivalRate, double totalStartupFundingReceived, double averageFundingPerStartup, int numberOfFundingRounds, int numberOfStartupsWithForeignInvestment, double amountOfGovernmentGrantsOrSubsidiesReceived, int numberOfStartupIncubatorsOrAccelerators, int numberOfStartupsInIncubationPrograms, int numberOfMentorsOrAdvisorsInvolved, int publicPrivatePartnershipsInvolvingStartups) {
         this.id = id;
+        this.likes = likes;
+        this.bookmarks = bookmarks;
+        this.viewsCount = viewsCount;
         this.companyName = companyName;
         this.companyDescription = companyDescription;
         this.foundedDate = foundedDate;
@@ -79,7 +105,25 @@ public class Startup {
         this.locationLng = locationLng;
         this.locationName = locationName;
         this.startupCode = startupCode;
-        this.viewsCount = 0;
+        this.revenue = revenue;
+        this.annualRevenue = annualRevenue;
+        this.paidUpCapital = paidUpCapital;
+        this.fundingStage = fundingStage;
+        this.businessActivity = businessActivity;
+        this.operatingHours = operatingHours;
+        this.numberOfActiveStartups = numberOfActiveStartups;
+        this.numberOfNewStartupsThisYear = numberOfNewStartupsThisYear;
+        this.averageStartupGrowthRate = averageStartupGrowthRate;
+        this.startupSurvivalRate = startupSurvivalRate;
+        this.totalStartupFundingReceived = totalStartupFundingReceived;
+        this.averageFundingPerStartup = averageFundingPerStartup;
+        this.numberOfFundingRounds = numberOfFundingRounds;
+        this.numberOfStartupsWithForeignInvestment = numberOfStartupsWithForeignInvestment;
+        this.amountOfGovernmentGrantsOrSubsidiesReceived = amountOfGovernmentGrantsOrSubsidiesReceived;
+        this.numberOfStartupIncubatorsOrAccelerators = numberOfStartupIncubatorsOrAccelerators;
+        this.numberOfStartupsInIncubationPrograms = numberOfStartupsInIncubationPrograms;
+        this.numberOfMentorsOrAdvisorsInvolved = numberOfMentorsOrAdvisorsInvolved;
+        this.publicPrivatePartnershipsInvolvingStartups = publicPrivatePartnershipsInvolvingStartups;
     }
 
     // Getters and Setters
@@ -89,6 +133,14 @@ public class Startup {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public List<Like> getLikes() {
@@ -289,6 +341,158 @@ public class Startup {
 
     public void setViewsCount(int viewsCount) {
         this.viewsCount = viewsCount;
+    }
+
+    public double getRevenue() {
+        return revenue;
+    }
+
+    public void setRevenue(double revenue) {
+        this.revenue = revenue;
+    }
+
+    public Double getAnnualRevenue() {
+        return annualRevenue;
+    }
+
+    public void setAnnualRevenue(Double annualRevenue) {
+        this.annualRevenue = annualRevenue;
+    }
+
+    public Double getPaidUpCapital() {
+        return paidUpCapital;
+    }
+
+    public void setPaidUpCapital(Double paidUpCapital) {
+        this.paidUpCapital = paidUpCapital;
+    }
+
+    public String getFundingStage() {
+        return fundingStage;
+    }
+
+    public void setFundingStage(String fundingStage) {
+        this.fundingStage = fundingStage;
+    }
+
+    public String getBusinessActivity() {
+        return businessActivity;
+    }
+
+    public void setBusinessActivity(String businessActivity) {
+        this.businessActivity = businessActivity;
+    }
+
+    public String getOperatingHours() {
+        return operatingHours;
+    }
+
+    public void setOperatingHours(String operatingHours) {
+        this.operatingHours = operatingHours;
+    }
+
+    public int getNumberOfActiveStartups() {
+        return numberOfActiveStartups;
+    }
+
+    public void setNumberOfActiveStartups(int numberOfActiveStartups) {
+        this.numberOfActiveStartups = numberOfActiveStartups;
+    }
+
+    public int getNumberOfNewStartupsThisYear() {
+        return numberOfNewStartupsThisYear;
+    }
+
+    public void setNumberOfNewStartupsThisYear(int numberOfNewStartupsThisYear) {
+        this.numberOfNewStartupsThisYear = numberOfNewStartupsThisYear;
+    }
+
+    public double getAverageStartupGrowthRate() {
+        return averageStartupGrowthRate;
+    }
+
+    public void setAverageStartupGrowthRate(double averageStartupGrowthRate) {
+        this.averageStartupGrowthRate = averageStartupGrowthRate;
+    }
+
+    public double getStartupSurvivalRate() {
+        return startupSurvivalRate;
+    }
+
+    public void setStartupSurvivalRate(double startupSurvivalRate) {
+        this.startupSurvivalRate = startupSurvivalRate;
+    }
+
+    public double getTotalStartupFundingReceived() {
+        return totalStartupFundingReceived;
+    }
+
+    public void setTotalStartupFundingReceived(double totalStartupFundingReceived) {
+        this.totalStartupFundingReceived = totalStartupFundingReceived;
+    }
+
+    public double getAverageFundingPerStartup() {
+        return averageFundingPerStartup;
+    }
+
+    public void setAverageFundingPerStartup(double averageFundingPerStartup) {
+        this.averageFundingPerStartup = averageFundingPerStartup;
+    }
+
+    public int getNumberOfFundingRounds() {
+        return numberOfFundingRounds;
+    }
+
+    public void setNumberOfFundingRounds(int numberOfFundingRounds) {
+        this.numberOfFundingRounds = numberOfFundingRounds;
+    }
+
+    public int getNumberOfStartupsWithForeignInvestment() {
+        return numberOfStartupsWithForeignInvestment;
+    }
+
+    public void setNumberOfStartupsWithForeignInvestment(int numberOfStartupsWithForeignInvestment) {
+        this.numberOfStartupsWithForeignInvestment = numberOfStartupsWithForeignInvestment;
+    }
+
+    public double getAmountOfGovernmentGrantsOrSubsidiesReceived() {
+        return amountOfGovernmentGrantsOrSubsidiesReceived;
+    }
+
+    public void setAmountOfGovernmentGrantsOrSubsidiesReceived(double amountOfGovernmentGrantsOrSubsidiesReceived) {
+        this.amountOfGovernmentGrantsOrSubsidiesReceived = amountOfGovernmentGrantsOrSubsidiesReceived;
+    }
+
+    public int getNumberOfStartupIncubatorsOrAccelerators() {
+        return numberOfStartupIncubatorsOrAccelerators;
+    }
+
+    public void setNumberOfStartupIncubatorsOrAccelerators(int numberOfStartupIncubatorsOrAccelerators) {
+        this.numberOfStartupIncubatorsOrAccelerators = numberOfStartupIncubatorsOrAccelerators;
+    }
+
+    public int getNumberOfStartupsInIncubationPrograms() {
+        return numberOfStartupsInIncubationPrograms;
+    }
+
+    public void setNumberOfStartupsInIncubationPrograms(int numberOfStartupsInIncubationPrograms) {
+        this.numberOfStartupsInIncubationPrograms = numberOfStartupsInIncubationPrograms;
+    }
+
+    public int getNumberOfMentorsOrAdvisorsInvolved() {
+        return numberOfMentorsOrAdvisorsInvolved;
+    }
+
+    public void setNumberOfMentorsOrAdvisorsInvolved(int numberOfMentorsOrAdvisorsInvolved) {
+        this.numberOfMentorsOrAdvisorsInvolved = numberOfMentorsOrAdvisorsInvolved;
+    }
+
+    public int getPublicPrivatePartnershipsInvolvingStartups() {
+        return publicPrivatePartnershipsInvolvingStartups;
+    }
+
+    public void setPublicPrivatePartnershipsInvolvingStartups(int publicPrivatePartnershipsInvolvingStartups) {
+        this.publicPrivatePartnershipsInvolvingStartups = publicPrivatePartnershipsInvolvingStartups;
     }
 
 }
