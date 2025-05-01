@@ -8,4 +8,7 @@ import com.startupsphere.capstone.entity.Startup;
 
 public interface StartupRepository extends JpaRepository<Startup, Long> {
     List<Startup> findByCompanyNameContainingIgnoreCase(String query);
+
+    List<Startup> findByUser_Id(Integer userId);
+
 }

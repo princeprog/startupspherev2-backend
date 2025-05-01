@@ -32,7 +32,8 @@ public class StartupController {
     public ResponseEntity<Startup> createStartup(@RequestBody Startup startup) {
         // Retrieve the currently authenticated user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
             return ResponseEntity.status(401).body(null); // Unauthorized if no user is logged in
         }
 
@@ -154,6 +155,28 @@ public class StartupController {
             return ResponseEntity.ok("CSV file processed and data updated successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error processing the file: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/my-startups")
+    public ResponseEntity<List<Long>> getStartupIdsByLoggedInUser() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            List<Long> startupIds = startupService.getStartupIdsByLoggedInUser(authentication);
+            return ResponseEntity.ok(startupIds);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(null); // Unauthorized if no user is logged in
+        }
+    }
+
+    @GetMapping("/{id}/view-count")
+    public ResponseEntity<Integer> getStartupViews(@PathVariable Long id) {
+        Optional<Startup> optionalStartup = startupService.getStartupById(id);
+        if (optionalStartup.isPresent()) {
+            Startup startup = optionalStartup.get();
+            return ResponseEntity.ok(startup.getViewsCount());
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 

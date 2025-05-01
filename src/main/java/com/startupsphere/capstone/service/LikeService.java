@@ -50,5 +50,8 @@ public class LikeService {
         likeRepository.deleteById(id);
     }
 
-    
+    public long getLikeCountByStartupId(Long startupId) {
+        return likeRepository.countByStartupId(startupId);
+    }
+
 }

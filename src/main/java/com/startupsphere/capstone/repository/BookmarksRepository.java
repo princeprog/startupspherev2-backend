@@ -13,4 +13,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface BookmarksRepository extends JpaRepository<Bookmarks, Long> {
     List<Bookmarks> findByUser(User user);
     Optional<Bookmarks> findByUserAndStartupAndInvestor(User user, Startup startup, Investor investor);
+    long countByStartup_Id(Long startupId);
 }

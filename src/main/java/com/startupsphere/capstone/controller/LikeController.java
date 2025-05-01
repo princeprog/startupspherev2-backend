@@ -90,4 +90,10 @@ public class LikeController {
     public void deleteLike(@PathVariable Long id) {
         likeService.deleteLike(id);
     }
+
+    @GetMapping("/count/startup/{startupId}")
+    public ResponseEntity<Long> getLikeCountByStartupId(@PathVariable Long startupId) {
+        long count = likeService.getLikeCountByStartupId(startupId);
+        return ResponseEntity.ok(count);
+    }
 }

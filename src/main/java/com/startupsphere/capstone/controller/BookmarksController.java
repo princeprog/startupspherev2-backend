@@ -94,4 +94,9 @@ public class BookmarksController {
         }
     }
 
+    @GetMapping("/count/startup/{startupId}")
+    public ResponseEntity<Long> getBookmarkCountByStartupId(@PathVariable Long startupId) {
+        long count = bookmarksService.getBookmarkCountByStartupId(startupId);
+        return ResponseEntity.ok(count);
+    }
 }

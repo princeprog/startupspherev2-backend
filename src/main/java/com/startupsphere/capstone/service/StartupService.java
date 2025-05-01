@@ -1,7 +1,10 @@
 package com.startupsphere.capstone.service;
 
 import com.startupsphere.capstone.entity.Startup;
+import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.repository.StartupRepository;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -65,5 +68,22 @@ public class StartupService {
 
     public void saveAll(List<Startup> startups) {
         startupRepository.saveAll(startups);
+    }
+
+    public List<Long> getStartupIdsByLoggedInUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("Unauthorized: No user is logged in");
+        }
+
+        User loggedInUser = (User) authentication.getPrincipal(); // Get the logged-in user
+        List<Startup> startups = startupRepository.findByUser_Id(loggedInUser.getId());
+        return startups.stream().map(Startup::getId).toList(); // Extract only the IDs
+    }
+
+    public int getStartupViews(Long startupId) {
+        Startup startup = startupRepository.findById(startupId)
+                .orElseThrow(() -> new RuntimeException("Startup not found with id: " + startupId));
+        return startup.getViewsCount();
     }
 }

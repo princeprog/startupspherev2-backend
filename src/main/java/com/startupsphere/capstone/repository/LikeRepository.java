@@ -15,4 +15,5 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     // Corrected method to reference the 'investorId' field in the 'Investor' entity
     Optional<Like> findByUserIdAndInvestor_InvestorId(Integer userId, Integer investorId);
 
+    long countByStartupId(Long startupId);
 }

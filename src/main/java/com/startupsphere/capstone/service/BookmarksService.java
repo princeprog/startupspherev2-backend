@@ -42,4 +42,8 @@ public class BookmarksService {
             return false;
         }
     }
+
+    public long getBookmarkCountByStartupId(Long startupId) {
+        return bookmarksRepository.countByStartup_Id(startupId);
+    }
 }
