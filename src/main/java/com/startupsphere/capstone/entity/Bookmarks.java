@@ -11,7 +11,6 @@ public class Bookmarks {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Instant timestamp = Instant.now();
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "users")
@@ -26,7 +25,6 @@ public class Bookmarks {
     private Investor investor;
 
 
-    // --- Constructors ---
 
     public Bookmarks() {
         // Default constructor
@@ -36,7 +34,6 @@ public class Bookmarks {
         this.user = user;
         this.startup = startup;
         this.investor = investor;
-        this.timestamp = Instant.now();
     }
 
     // --- Getters and Setters ---
@@ -49,14 +46,7 @@ public class Bookmarks {
         this.id = id;
     }
 
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
-    }
-
+    
     public User getUser() {
         return user;
     }
