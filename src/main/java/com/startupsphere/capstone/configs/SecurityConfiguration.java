@@ -29,11 +29,11 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Public auth endpoints
-                        .requestMatchers("/startups", "/startups/**").permitAll() // Public GET endpoints for startups
-                        .requestMatchers("/investors", "/investors/**").permitAll() // Public GET endpoints for
-                                                                                    // investors
-                        .anyRequest().authenticated()) // All other endpoints require authentication
+                        .requestMatchers("/auth/**").permitAll() 
+                        .requestMatchers("/startups", "/startups/**").permitAll() 
+                        .requestMatchers("/investors", "/investors/**").permitAll() 
+                        .requestMatchers("/api/bookmarks/**").hasAnyRole("USER", "ADMIN") 
+                        .anyRequest().authenticated()) 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)

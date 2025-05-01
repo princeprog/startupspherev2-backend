@@ -3,10 +3,11 @@ package com.startupsphere.capstone.service;
 import com.startupsphere.capstone.entity.Bookmarks;
 import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.repository.BookmarksRepository;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookmarksService {
@@ -30,11 +31,11 @@ public class BookmarksService {
         return bookmarksRepository.findAll();
     }
 
+    @Transactional
     public boolean deleteBookmark(Long id) {
-        Optional<Bookmarks> bookmark = bookmarksRepository.findById(id);
-        if (bookmark.isPresent()) {
+        if (bookmarksRepository.existsById(id)) {
             System.out.println("Deleting bookmark with id: " + id); // Add logging
-            bookmarksRepository.delete(bookmark.get());
+            bookmarksRepository.deleteById(id); // Use deleteById directly
             return true;
         } else {
             System.out.println("Bookmark with id " + id + " not found"); // Add logging
