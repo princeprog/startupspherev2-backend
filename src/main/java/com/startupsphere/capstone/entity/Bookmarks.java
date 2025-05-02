@@ -11,20 +11,19 @@ public class Bookmarks {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Instant timestamp = Instant.now();
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "users")
     private User user;
 
-    @ManyToOne(optional = true)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "startupId", nullable = true)
     private Startup startup;
 
-    @ManyToOne(optional = true)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "investorId", nullable = true)
     private Investor investor;
-
-
 
     public Bookmarks() {
         // Default constructor
@@ -34,6 +33,7 @@ public class Bookmarks {
         this.user = user;
         this.startup = startup;
         this.investor = investor;
+        this.timestamp = Instant.now();
     }
 
     // --- Getters and Setters ---
@@ -46,7 +46,14 @@ public class Bookmarks {
         this.id = id;
     }
 
-    
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Instant timestamp) {
+        this.timestamp = timestamp;
+    }
+
     public User getUser() {
         return user;
     }

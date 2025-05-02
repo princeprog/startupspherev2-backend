@@ -20,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookmarks")
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class BookmarksController {
 
     private final BookmarksService bookmarksService;
@@ -85,12 +86,13 @@ public class BookmarksController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBookmark(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Void> deleteBookmark(@PathVariable Long id) {
         boolean isDeleted = bookmarksService.deleteBookmark(id);
         if (isDeleted) {
-            return ResponseEntity.ok("Bookmark deleted successfully");
+            return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bookmark not found");
+            return ResponseEntity.notFound().build();
         }
     }
 
