@@ -94,14 +94,13 @@ public class StartupController {
         }
     }
 
-    // Increment the views count for a specific startup
     @PutMapping("/{id}/increment-views")
     public ResponseEntity<Integer> incrementViews(@PathVariable Long id) {
         Optional<Startup> optionalStartup = startupRepository.findById(id);
         if (optionalStartup.isPresent()) {
             Startup startup = optionalStartup.get();
             startup.setViewsCount(startup.getViewsCount() + 1);
-            startupRepository.save(startup); // Save updated startup
+            startupRepository.save(startup); 
             return ResponseEntity.ok(startup.getViewsCount());
         } else {
             return ResponseEntity.notFound().build();
@@ -177,6 +176,17 @@ public class StartupController {
             return ResponseEntity.ok(startup.getViewsCount());
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/my-startups/details")
+    public ResponseEntity<List<Startup>> getStartupsByLoggedInUser() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            List<Startup> startups = startupService.getStartupsByLoggedInUser(authentication);
+            return ResponseEntity.ok(startups);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).build(); // Unauthorized if no user is logged in
         }
     }
 

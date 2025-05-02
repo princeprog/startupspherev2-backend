@@ -86,4 +86,14 @@ public class StartupService {
                 .orElseThrow(() -> new RuntimeException("Startup not found with id: " + startupId));
         return startup.getViewsCount();
     }
+
+    public List<Startup> getStartupsByLoggedInUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("Unauthorized: No user is logged in");
+        }
+
+        User loggedInUser = (User) authentication.getPrincipal(); // Get the logged-in user
+        return startupRepository.findByUser_Id(loggedInUser.getId());
+    }
+
 }

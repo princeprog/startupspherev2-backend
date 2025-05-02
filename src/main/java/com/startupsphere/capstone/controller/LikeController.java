@@ -96,4 +96,10 @@ public class LikeController {
         long count = likeService.getLikeCountByStartupId(startupId);
         return ResponseEntity.ok(count);
     }
+
+    @GetMapping("/grouped-by-month/startup/{startupId}")
+    public ResponseEntity<Map<String, Long>> getLikesGroupedByMonthForStartup(@PathVariable Long startupId) {
+        Map<String, Long> likesByMonth = likeService.getLikesGroupedByMonthForStartup(startupId);
+        return ResponseEntity.ok(likesByMonth);
+    }
 }

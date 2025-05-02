@@ -5,7 +5,9 @@ import com.startupsphere.capstone.repository.LikeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -52,6 +54,25 @@ public class LikeService {
 
     public long getLikeCountByStartupId(Long startupId) {
         return likeRepository.countByStartupId(startupId);
+    }
+
+    public Map<String, Long> getLikesGroupedByMonthForStartup(Long startupId) {
+        List<Object[]> results = likeRepository.countLikesGroupedByMonthForStartup(startupId);
+        Map<String, Long> likesByMonth = new LinkedHashMap<>();
+
+        // Map month numbers to month names
+        String[] monthNames = {
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        };
+
+        for (Object[] result : results) {
+            Integer month = (Integer) result[0];
+            Long count = (Long) result[1];
+            likesByMonth.put(monthNames[month - 1], count);
+        }
+
+        return likesByMonth;
     }
 
 }
