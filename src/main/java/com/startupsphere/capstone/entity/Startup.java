@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "startups")
 public class Startup {
 
     @Id
@@ -54,16 +55,16 @@ public class Startup {
     private double revenue;
     private Double annualRevenue;
     private Double paidUpCapital;
-    private String fundingStage; // e.g., Bootstrapped, Seed, Series A, etc.
+    private String fundingStage;
     private String businessActivity;
     private String operatingHours;
     private int numberOfActiveStartups;
     private int numberOfNewStartupsThisYear;
-    private double averageStartupGrowthRate; // based on revenue, users, or valuation
-    private double startupSurvivalRate; // % of startups that survive >2 years
-    private double totalStartupFundingReceived; // aggregated funding
+    private double averageStartupGrowthRate;
+    private double startupSurvivalRate;
+    private double totalStartupFundingReceived;
     private double averageFundingPerStartup;
-    private int numberOfFundingRounds; // e.g., seed, Series A
+    private int numberOfFundingRounds;
     private int numberOfStartupsWithForeignInvestment;
     private double amountOfGovernmentGrantsOrSubsidiesReceived;
     private int numberOfStartupIncubatorsOrAccelerators;
@@ -71,15 +72,33 @@ public class Startup {
     private int numberOfMentorsOrAdvisorsInvolved;
     private int publicPrivatePartnershipsInvolvingStartups;
 
+    // Email verification fields
+    @Column(name = "verification_code")
+    private String verificationCode;
+
+    @Column(name = "email_verified", nullable = false)
+    private Boolean emailVerified = false;
+
     // Default constructor
     public Startup() {
     }
 
     // All-args constructor
-
-
-    public Startup(Long id, List<Like> likes, List<Bookmarks> bookmarks, Integer viewsCount, String companyName, String companyDescription, String foundedDate, String typeOfCompany, String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress, String country, String city, String province, String postalCode, String industry, String website, String facebook, String twitter, String instagram, String linkedIn, Double locationLat, Double locationLng, String locationName, String startupCode, double revenue, Double annualRevenue, Double paidUpCapital, String fundingStage, String businessActivity, String operatingHours, int numberOfActiveStartups, int numberOfNewStartupsThisYear, double averageStartupGrowthRate, double startupSurvivalRate, double totalStartupFundingReceived, double averageFundingPerStartup, int numberOfFundingRounds, int numberOfStartupsWithForeignInvestment, double amountOfGovernmentGrantsOrSubsidiesReceived, int numberOfStartupIncubatorsOrAccelerators, int numberOfStartupsInIncubationPrograms, int numberOfMentorsOrAdvisorsInvolved, int publicPrivatePartnershipsInvolvingStartups) {
+    public Startup(Long id, User user, List<Like> likes, List<Bookmarks> bookmarks, Integer viewsCount,
+                   String companyName, String companyDescription, String foundedDate, String typeOfCompany,
+                   String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress,
+                   String country, String city, String province, String postalCode, String industry, String website,
+                   String facebook, String twitter, String instagram, String linkedIn, Double locationLat,
+                   Double locationLng, String locationName, String startupCode, double revenue, Double annualRevenue,
+                   Double paidUpCapital, String fundingStage, String businessActivity, String operatingHours,
+                   int numberOfActiveStartups, int numberOfNewStartupsThisYear, double averageStartupGrowthRate,
+                   double startupSurvivalRate, double totalStartupFundingReceived, double averageFundingPerStartup,
+                   int numberOfFundingRounds, int numberOfStartupsWithForeignInvestment,
+                   double amountOfGovernmentGrantsOrSubsidiesReceived, int numberOfStartupIncubatorsOrAccelerators,
+                   int numberOfStartupsInIncubationPrograms, int numberOfMentorsOrAdvisorsInvolved,
+                   int publicPrivatePartnershipsInvolvingStartups, String verificationCode, Boolean emailVerified) {
         this.id = id;
+        this.user = user;
         this.likes = likes;
         this.bookmarks = bookmarks;
         this.viewsCount = viewsCount;
@@ -124,6 +143,8 @@ public class Startup {
         this.numberOfStartupsInIncubationPrograms = numberOfStartupsInIncubationPrograms;
         this.numberOfMentorsOrAdvisorsInvolved = numberOfMentorsOrAdvisorsInvolved;
         this.publicPrivatePartnershipsInvolvingStartups = publicPrivatePartnershipsInvolvingStartups;
+        this.verificationCode = verificationCode;
+        this.emailVerified = emailVerified;
     }
 
     // Getters and Setters
@@ -157,6 +178,14 @@ public class Startup {
 
     public void setBookmarks(List<Bookmarks> bookmarks) {
         this.bookmarks = bookmarks;
+    }
+
+    public Integer getViewsCount() {
+        return (viewsCount == null) ? 0 : viewsCount;
+    }
+
+    public void setViewsCount(Integer viewsCount) {
+        this.viewsCount = viewsCount;
     }
 
     public String getCompanyName() {
@@ -335,14 +364,6 @@ public class Startup {
         this.startupCode = startupCode;
     }
 
-    public Integer getViewsCount() {
-        return (viewsCount == null) ? 0 : viewsCount; // Return 0 if null
-    }
-
-    public void setViewsCount(int viewsCount) {
-        this.viewsCount = viewsCount;
-    }
-
     public double getRevenue() {
         return revenue;
     }
@@ -495,4 +516,19 @@ public class Startup {
         this.publicPrivatePartnershipsInvolvingStartups = publicPrivatePartnershipsInvolvingStartups;
     }
 
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
+
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
 }
