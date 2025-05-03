@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookmarks")
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.OPTIONS})
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
+        RequestMethod.DELETE, RequestMethod.OPTIONS })
 public class BookmarksController {
 
     private final BookmarksService bookmarksService;
@@ -100,5 +102,31 @@ public class BookmarksController {
     public ResponseEntity<Long> getBookmarkCountByStartupId(@PathVariable Long startupId) {
         long count = bookmarksService.getBookmarkCountByStartupId(startupId);
         return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/grouped-by-month/startup/{startupId}")
+    public ResponseEntity<Map<String, Long>> getBookmarksGroupedByMonthForStartup(@PathVariable Long startupId) {
+        Map<String, Long> bookmarksByMonth = bookmarksService.getBookmarksGroupedByMonthForStartup(startupId);
+        return ResponseEntity.ok(bookmarksByMonth);
+    }
+
+    @GetMapping("/count/logged-in-user-startups")
+    public ResponseEntity<Long> getTotalBookmarksForLoggedInUserStartups() {
+        try {
+            long totalBookmarks = bookmarksService.getTotalBookmarksForLoggedInUserStartups();
+            return ResponseEntity.ok(totalBookmarks);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(null); // Unauthorized
+        }
+    }
+
+    @GetMapping("/grouped-by-month/logged-in-user-startups")
+    public ResponseEntity<Map<String, Long>> getBookmarksGroupedByMonthForLoggedInUserStartups() {
+        try {
+            Map<String, Long> bookmarksByMonth = bookmarksService.getBookmarksGroupedByMonthForLoggedInUserStartups();
+            return ResponseEntity.ok(bookmarksByMonth);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(null); // Unauthorized
+        }
     }
 }

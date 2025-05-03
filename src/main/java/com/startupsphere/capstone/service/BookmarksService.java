@@ -7,7 +7,12 @@ import com.startupsphere.capstone.repository.BookmarksRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class BookmarksService {
@@ -65,5 +70,57 @@ public class BookmarksService {
 
     public long getBookmarkCountByStartupId(Long startupId) {
         return bookmarksRepository.countByStartup_Id(startupId);
+    }
+
+    public Map<String, Long> getBookmarksGroupedByMonthForStartup(Long startupId) {
+        List<Object[]> results = bookmarksRepository.countBookmarksGroupedByMonthForStartup(startupId);
+        Map<String, Long> bookmarksByMonth = new LinkedHashMap<>();
+
+        String[] monthNames = {
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+        };
+
+        for (Object[] result : results) {
+            Integer month = (Integer) result[0];
+            Long count = (Long) result[1];
+            bookmarksByMonth.put(monthNames[month - 1], count);
+        }
+
+        return bookmarksByMonth;
+    }
+
+    public long getTotalBookmarksForLoggedInUserStartups() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("Unauthorized: No user is logged in");
+        }
+
+        User loggedInUser = (User) authentication.getPrincipal(); // Get the logged-in user
+        return bookmarksRepository.countBookmarksByStartupOwner(loggedInUser.getId());
+    }
+
+    public Map<String, Long> getBookmarksGroupedByMonthForLoggedInUserStartups() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("Unauthorized: No user is logged in");
+        }
+    
+        User loggedInUser = (User) authentication.getPrincipal(); // Get the logged-in user
+        List<Object[]> results = bookmarksRepository.countBookmarksGroupedByMonthForUserOwnedStartups(loggedInUser.getId());
+    
+        Map<String, Long> bookmarksByMonth = new LinkedHashMap<>();
+        String[] monthNames = {
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+        };
+    
+        for (Object[] result : results) {
+            Integer month = (Integer) result[0];
+            Long count = (Long) result[1];
+            bookmarksByMonth.put(monthNames[month - 1], count);
+        }
+    
+        return bookmarksByMonth;
     }
 }

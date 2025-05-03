@@ -25,4 +25,14 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
             "GROUP BY MONTH(l.timestamp) " +
             "ORDER BY MONTH(l.timestamp)")
     List<Object[]> countLikesGroupedByMonthForStartup(@Param("startupId") Long startupId);
+
+    @Query("SELECT COUNT(l) FROM Like l WHERE l.startup.user.id = :userId")
+    long countLikesByStartupOwner(@Param("userId") Integer userId);
+
+    @Query("SELECT MONTH(l.timestamp) AS month, COUNT(l) AS count " +
+            "FROM Like l " +
+            "WHERE l.startup.user.id = :userId " +
+            "GROUP BY MONTH(l.timestamp) " +
+            "ORDER BY MONTH(l.timestamp)")
+    List<Object[]> countLikesGroupedByMonthForUserOwnedStartups(@Param("userId") Integer userId);
 }

@@ -102,4 +102,24 @@ public class LikeController {
         Map<String, Long> likesByMonth = likeService.getLikesGroupedByMonthForStartup(startupId);
         return ResponseEntity.ok(likesByMonth);
     }
+
+    @GetMapping("/count/logged-in-user-startups")
+    public ResponseEntity<Long> getTotalLikesForLoggedInUserStartups() {
+        try {
+            long totalLikes = likeService.getTotalLikesForLoggedInUserStartups();
+            return ResponseEntity.ok(totalLikes);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(null); // Unauthorized
+        }
+    }
+
+    @GetMapping("/grouped-by-month/logged-in-user-startups")
+    public ResponseEntity<Map<String, Long>> getLikesGroupedByMonthForLoggedInUserStartups() {
+        try {
+            Map<String, Long> likesByMonth = likeService.getLikesGroupedByMonthForLoggedInUserStartups();
+            return ResponseEntity.ok(likesByMonth);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(null); // Unauthorized
+        }
+    }
 }

@@ -1,8 +1,11 @@
 package com.startupsphere.capstone.service;
 
 import com.startupsphere.capstone.entity.Like;
+import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.repository.LikeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
@@ -72,6 +75,40 @@ public class LikeService {
             likesByMonth.put(monthNames[month - 1], count);
         }
 
+        return likesByMonth;
+    }
+
+    public long getTotalLikesForLoggedInUserStartups() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("Unauthorized: No user is logged in");
+        }
+
+        User loggedInUser = (User) authentication.getPrincipal(); // Get the logged-in user
+        return likeRepository.countLikesByStartupOwner(loggedInUser.getId());
+    }
+
+    public Map<String, Long> getLikesGroupedByMonthForLoggedInUserStartups() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("Unauthorized: No user is logged in");
+        }
+    
+        User loggedInUser = (User) authentication.getPrincipal(); 
+        List<Object[]> results = likeRepository.countLikesGroupedByMonthForUserOwnedStartups(loggedInUser.getId());
+    
+        Map<String, Long> likesByMonth = new LinkedHashMap<>();
+        String[] monthNames = {
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+        };
+    
+        for (Object[] result : results) {
+            Integer month = (Integer) result[0];
+            Long count = (Long) result[1];
+            likesByMonth.put(monthNames[month - 1], count);
+        }
+    
         return likesByMonth;
     }
 

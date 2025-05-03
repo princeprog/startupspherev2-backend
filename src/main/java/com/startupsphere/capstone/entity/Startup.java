@@ -25,6 +25,10 @@ public class Startup {
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Bookmarks> bookmarks = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Views> views = new ArrayList<>();
+
     @Column(name = "views_count", nullable = false)
     private Integer viewsCount = 0;
 
