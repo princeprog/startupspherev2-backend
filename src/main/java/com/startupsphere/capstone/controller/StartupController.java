@@ -4,21 +4,25 @@ import com.startupsphere.capstone.entity.Startup;
 import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.service.StartupService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/startups")
 public class StartupController {
+
+    private static final Logger logger = LoggerFactory.getLogger(StartupController.class);
 
     private final StartupService startupService;
     private final StartupRepository startupRepository;
@@ -29,19 +33,27 @@ public class StartupController {
     }
 
     @PostMapping
+    @Transactional
     public ResponseEntity<Startup> createStartup(@RequestBody Startup startup) {
-        // Retrieve the currently authenticated user
+        logger.info("Attempting to create startup: {}", startup.getCompanyName());
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()
                 || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body(null); // Unauthorized if no user is logged in
+            logger.warn("Unauthorized attempt to create startup");
+            return ResponseEntity.status(401).body(null);
         }
 
-        User loggedInUser = (User) authentication.getPrincipal(); // Get the logged-in user
-        startup.setUser(loggedInUser); // Assign the logged-in user as the foreign key
+        User loggedInUser = (User) authentication.getPrincipal();
+        startup.setUser(loggedInUser);
 
-        Startup createdStartup = startupService.createStartup(startup);
-        return ResponseEntity.ok(createdStartup);
+        try {
+            Startup createdStartup = startupService.createStartup(startup);
+            logger.info("Startup created successfully with ID: {}", createdStartup.getId());
+            return ResponseEntity.ok(createdStartup);
+        } catch (Exception e) {
+            logger.error("Error creating startup: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @GetMapping
@@ -100,7 +112,7 @@ public class StartupController {
         if (optionalStartup.isPresent()) {
             Startup startup = optionalStartup.get();
             startup.setViewsCount(startup.getViewsCount() + 1);
-            startupRepository.save(startup); 
+            startupRepository.save(startup);
             return ResponseEntity.ok(startup.getViewsCount());
         } else {
             return ResponseEntity.notFound().build();
@@ -127,7 +139,7 @@ public class StartupController {
 
             while ((line = reader.readLine()) != null) {
                 if (isHeader) {
-                    isHeader = false; // Skip the header row
+                    isHeader = false;
                     continue;
                 }
 
@@ -150,7 +162,7 @@ public class StartupController {
                 startup.setPublicPrivatePartnershipsInvolvingStartups(Integer.parseInt(fields[15]));
             }
 
-            startupService.createStartup(startup); // Save the updated startup
+            startupService.updateStartup(startupId, startup);
             return ResponseEntity.ok("CSV file processed and data updated successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error processing the file: " + e.getMessage());
@@ -164,7 +176,7 @@ public class StartupController {
             List<Long> startupIds = startupService.getStartupIdsByLoggedInUser(authentication);
             return ResponseEntity.ok(startupIds);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body(null); // Unauthorized if no user is logged in
+            return ResponseEntity.status(401).body(null);
         }
     }
 
@@ -186,8 +198,40 @@ public class StartupController {
             List<Startup> startups = startupService.getStartupsByLoggedInUser(authentication);
             return ResponseEntity.ok(startups);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(401).build(); // Unauthorized if no user is logged in
+            return ResponseEntity.status(401).build();
         }
     }
 
+    @PostMapping("/send-verification-email")
+    public ResponseEntity<String> sendVerificationEmail(@RequestBody VerificationRequest request) {
+        try {
+            startupService.sendVerificationEmail(request.getStartupId(), request.getEmail());
+            return ResponseEntity.ok("Verification email sent successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error sending verification email: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(@RequestBody VerificationRequest request) {
+        try {
+            startupService.verifyEmail(request.getStartupId(), request.getEmail(), request.getCode());
+            return ResponseEntity.ok("Email verified successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error verifying email: " + e.getMessage());
+        }
+    }
+
+    public static class VerificationRequest {
+        private Long startupId;
+        private String email;
+        private String code;
+
+        public Long getStartupId() { return startupId; }
+        public void setStartupId(Long startupId) { this.startupId = startupId; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+    }
 }
