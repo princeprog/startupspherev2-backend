@@ -126,24 +126,35 @@ public class StartupService {
     }
 
     public void sendVerificationEmail(Long startupId, String email) {
+        logger.info("Attempting to send verification email for startup ID: {} to email: {}", startupId, email);
+        
         if (startupRepository.existsByContactEmailAndEmailVerifiedTrue(email)) {
+            logger.warn("Email {} is already verified", email);
             throw new RuntimeException("Email is already verified");
         }
-
+    
         Startup startup = startupRepository.findById(startupId)
-                .orElseThrow(() -> new RuntimeException("Startup not found with id: " + startupId));
-
+                .orElseThrow(() -> {
+                    logger.error("Startup not found with id: {}", startupId);
+                    return new RuntimeException("Startup not found with id: " + startupId);
+                });
+    
         String verificationCode = String.format("%06d", new Random().nextInt(999999));
         startup.setVerificationCode(verificationCode);
         startup.setEmailVerified(false);
         startupRepository.save(startup);
-
+    
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("Verify Your Email");
         message.setText("Your verification code is: " + verificationCode);
-        mailSender.send(message);
-        logger.info("Verification email sent to {}", email);
+        try {
+            mailSender.send(message);
+            logger.info("Verification email sent to {}", email);
+        } catch (Exception e) {
+            logger.error("Failed to send verification email to {}: {}", email, e.getMessage(), e);
+            throw new RuntimeException("Failed to send email: " + e.getMessage());
+        }
     }
 
     @Transactional
