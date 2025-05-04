@@ -3,7 +3,12 @@ package com.startupsphere.capstone.controller;
 import com.startupsphere.capstone.entity.Startup;
 import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.repository.StartupRepository;
+import com.startupsphere.capstone.responses.ErrorResponse;
+import com.startupsphere.capstone.responses.SuccessResponse;
 import com.startupsphere.capstone.service.StartupService;
+
+import io.jsonwebtoken.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -224,28 +229,56 @@ public class StartupController {
         }
     }
 
-    @PutMapping("/{id}/upload-photo")
-    public ResponseEntity<String> uploadStartupPhoto(
+@PutMapping("/{id}/upload-photo")
+    public ResponseEntity<?> uploadStartupPhoto(
             @PathVariable Long id,
             @RequestParam("photo") MultipartFile photo) {
-        if (photo.isEmpty() || !photo.getContentType().startsWith("image/")) {
-            return ResponseEntity.badRequest().body("Please upload a valid image file.");
+        // Validate file
+        if (photo == null || photo.isEmpty()) {
+            logger.warn("Upload attempt with empty or null photo for startup ID: {}", id);
+            return ResponseEntity.badRequest().body(
+                new ErrorResponse("Please upload a valid image file.")
+            );
+        }
+        if (!photo.getContentType().startsWith("image/")) {
+            logger.warn("Invalid file type uploaded for startup ID: {}. Content-Type: {}", id, photo.getContentType());
+            return ResponseEntity.badRequest().body(
+                new ErrorResponse("Please upload a valid image file (e.g., JPEG, PNG).")
+            );
         }
 
         try {
+            // Retrieve startup
             Optional<Startup> optionalStartup = startupService.getStartupById(id);
             if (optionalStartup.isEmpty()) {
-                return ResponseEntity.badRequest().body("Startup with ID " + id + " not found.");
+                logger.warn("Startup not found for ID: {}", id);
+                return ResponseEntity.badRequest().body(
+                    new ErrorResponse("Startup with ID " + id + " not found.")
+                );
             }
 
             Startup startup = optionalStartup.get();
 
-            startup.setPhoto(photo.getBytes());
+            // Store photo bytes
+            byte[] photoBytes = photo.getBytes();
+            startup.setPhoto(photoBytes);
 
+            // Update startup
             startupService.updateStartup(id, startup);
-            return ResponseEntity.ok("Photo uploaded successfully.");
+            logger.info("Photo uploaded successfully for startup ID: {}", id);
+            return ResponseEntity.ok(
+                new SuccessResponse("Photo uploaded successfully.")
+            );
+        } catch (IOException e) {
+            logger.error("Failed to read photo bytes for startup ID: {}", id, e);
+            return ResponseEntity.status(500).body(
+                new ErrorResponse("Error processing image file: " + e.getMessage())
+            );
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error uploading photo: " + e.getMessage());
+            logger.error("Error uploading photo for startup ID: {}", id, e);
+            return ResponseEntity.status(500).body(
+                new ErrorResponse("Error uploading photo: " + e.getMessage())
+            );
         }
     }
 
@@ -253,12 +286,14 @@ public class StartupController {
     public ResponseEntity<byte[]> getStartupPhoto(@PathVariable Long id) {
         Optional<Startup> optionalStartup = startupService.getStartupById(id);
         if (optionalStartup.isEmpty() || optionalStartup.get().getPhoto() == null) {
+            logger.warn("Photo not found for startup ID: {}", id);
             return ResponseEntity.notFound().build();
         }
 
+        byte[] photo = optionalStartup.get().getPhoto();
         return ResponseEntity.ok()
-                .header("Content-Type", "image/jpeg") // Adjust based on your image type
-                .body(optionalStartup.get().getPhoto());
+                .header("Content-Type", "image/jpeg") // Adjust based on actual image type
+                .body(photo);
     }
 
     public static class VerificationRequest {
