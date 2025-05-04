@@ -18,15 +18,15 @@ public class Startup {
     private User user;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.MERGE)
     private List<Like> likes;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private List<Bookmarks> bookmarks = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.MERGE)
     private List<Views> views = new ArrayList<>();
 
     @Column(name = "views_count", nullable = false)
@@ -82,7 +82,7 @@ public class Startup {
     private Boolean emailVerified = false;
 
     @Lob
-    @Column(name = "photo", columnDefinition = "BLOB")
+    @Column(name = "photo", columnDefinition = "LONGBLOB")
     private byte[] photo;
 
     public Startup() {
@@ -542,5 +542,13 @@ public class Startup {
 
     public void setEmailVerified(Boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public List<Views> getViews() {
+        return views;
+    }
+
+    public void setViews(List<Views> views) {
+        this.views = views;
     }
 }

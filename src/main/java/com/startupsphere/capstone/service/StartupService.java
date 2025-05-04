@@ -46,6 +46,14 @@ public class StartupService {
     public Startup updateStartup(Long id, Startup updatedStartup) {
         return startupRepository.findById(id)
                 .map(startup -> {
+                    // Preserve relationships
+                    updatedStartup.setId(startup.getId());
+                    updatedStartup.setUser(startup.getUser());
+                    updatedStartup.setLikes(startup.getLikes());
+                    updatedStartup.setBookmarks(startup.getBookmarks());
+                    updatedStartup.setViews(startup.getViews());
+                    
+                    // Update other fields
                     startup.setCompanyName(updatedStartup.getCompanyName());
                     startup.setCompanyDescription(updatedStartup.getCompanyDescription());
                     startup.setFoundedDate(updatedStartup.getFoundedDate());
@@ -87,6 +95,14 @@ public class StartupService {
                     startup.setNumberOfStartupsInIncubationPrograms(updatedStartup.getNumberOfStartupsInIncubationPrograms());
                     startup.setNumberOfMentorsOrAdvisorsInvolved(updatedStartup.getNumberOfMentorsOrAdvisorsInvolved());
                     startup.setPublicPrivatePartnershipsInvolvingStartups(updatedStartup.getPublicPrivatePartnershipsInvolvingStartups());
+                    startup.setVerificationCode(updatedStartup.getVerificationCode());
+                    startup.setEmailVerified(updatedStartup.getEmailVerified());
+                    
+                    // Update photo if provided
+                    if (updatedStartup.getPhoto() != null) {
+                        startup.setPhoto(updatedStartup.getPhoto());
+                    }
+                    
                     return startupRepository.save(startup);
                 })
                 .orElseThrow(() -> new RuntimeException("Startup not found with id: " + id));

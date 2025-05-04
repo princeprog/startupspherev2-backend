@@ -229,10 +229,12 @@ public class StartupController {
         }
     }
 
-@PutMapping("/{id}/upload-photo")
+    @PutMapping("/{id}/upload-photo")
     public ResponseEntity<?> uploadStartupPhoto(
             @PathVariable Long id,
-            @RequestParam("photo") MultipartFile photo) {
+            @RequestParam(value = "photo", required = false) MultipartFile photo) {
+        logger.info("Received photo upload request for startup ID: {}", id);
+        
         // Validate file
         if (photo == null || photo.isEmpty()) {
             logger.warn("Upload attempt with empty or null photo for startup ID: {}", id);
@@ -240,6 +242,12 @@ public class StartupController {
                 new ErrorResponse("Please upload a valid image file.")
             );
         }
+
+        logger.info("Photo details - Name: {}, Size: {}, Content-Type: {}", 
+            photo.getOriginalFilename(), 
+            photo.getSize(), 
+            photo.getContentType());
+
         if (!photo.getContentType().startsWith("image/")) {
             logger.warn("Invalid file type uploaded for startup ID: {}. Content-Type: {}", id, photo.getContentType());
             return ResponseEntity.badRequest().body(
@@ -258,14 +266,19 @@ public class StartupController {
             }
 
             Startup startup = optionalStartup.get();
+            logger.info("Found startup: {}", startup.getCompanyName());
 
             // Store photo bytes
             byte[] photoBytes = photo.getBytes();
+            logger.info("Successfully read photo bytes, size: {}", photoBytes.length);
+            
             startup.setPhoto(photoBytes);
+            logger.info("Set photo bytes to startup entity");
 
             // Update startup
-            startupService.updateStartup(id, startup);
-            logger.info("Photo uploaded successfully for startup ID: {}", id);
+            Startup updatedStartup = startupService.updateStartup(id, startup);
+            logger.info("Successfully updated startup with photo");
+            
             return ResponseEntity.ok(
                 new SuccessResponse("Photo uploaded successfully.")
             );
