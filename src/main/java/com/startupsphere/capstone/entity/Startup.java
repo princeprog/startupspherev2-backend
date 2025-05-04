@@ -55,7 +55,6 @@ public class Startup {
     private String locationName;
     private String startupCode;
 
-    // New attributes
     private double revenue;
     private Double annualRevenue;
     private Double paidUpCapital;
@@ -76,31 +75,32 @@ public class Startup {
     private int numberOfMentorsOrAdvisorsInvolved;
     private int publicPrivatePartnershipsInvolvingStartups;
 
-    // Email verification fields
     @Column(name = "verification_code")
     private String verificationCode;
 
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
 
-    // Default constructor
+    @Lob
+    @Column(name = "photo", columnDefinition = "BLOB")
+    private byte[] photo;
+
     public Startup() {
     }
 
-    // All-args constructor
     public Startup(Long id, User user, List<Like> likes, List<Bookmarks> bookmarks, Integer viewsCount,
-                   String companyName, String companyDescription, String foundedDate, String typeOfCompany,
-                   String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress,
-                   String country, String city, String province, String postalCode, String industry, String website,
-                   String facebook, String twitter, String instagram, String linkedIn, Double locationLat,
-                   Double locationLng, String locationName, String startupCode, double revenue, Double annualRevenue,
-                   Double paidUpCapital, String fundingStage, String businessActivity, String operatingHours,
-                   int numberOfActiveStartups, int numberOfNewStartupsThisYear, double averageStartupGrowthRate,
-                   double startupSurvivalRate, double totalStartupFundingReceived, double averageFundingPerStartup,
-                   int numberOfFundingRounds, int numberOfStartupsWithForeignInvestment,
-                   double amountOfGovernmentGrantsOrSubsidiesReceived, int numberOfStartupIncubatorsOrAccelerators,
-                   int numberOfStartupsInIncubationPrograms, int numberOfMentorsOrAdvisorsInvolved,
-                   int publicPrivatePartnershipsInvolvingStartups, String verificationCode, Boolean emailVerified) {
+            String companyName, String companyDescription, String foundedDate, String typeOfCompany,
+            String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress,
+            String country, String city, String province, String postalCode, String industry, String website,
+            String facebook, String twitter, String instagram, String linkedIn, Double locationLat,
+            Double locationLng, String locationName, String startupCode, double revenue, Double annualRevenue,
+            Double paidUpCapital, String fundingStage, String businessActivity, String operatingHours,
+            int numberOfActiveStartups, int numberOfNewStartupsThisYear, double averageStartupGrowthRate,
+            double startupSurvivalRate, double totalStartupFundingReceived, double averageFundingPerStartup,
+            int numberOfFundingRounds, int numberOfStartupsWithForeignInvestment,
+            double amountOfGovernmentGrantsOrSubsidiesReceived, int numberOfStartupIncubatorsOrAccelerators,
+            int numberOfStartupsInIncubationPrograms, int numberOfMentorsOrAdvisorsInvolved,
+            int publicPrivatePartnershipsInvolvingStartups, String verificationCode, Boolean emailVerified) {
         this.id = id;
         this.user = user;
         this.likes = likes;
@@ -158,6 +158,14 @@ public class Startup {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public byte[] getPhoto() {
+        return photo;
+    }
+    
+    public void setPhoto(byte[] photo) {
+        this.photo = photo;
     }
 
     public User getUser() {

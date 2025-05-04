@@ -222,16 +222,70 @@ public class StartupController {
         }
     }
 
+    @PutMapping("/{id}/upload-photo")
+    public ResponseEntity<String> uploadStartupPhoto(
+            @PathVariable Long id,
+            @RequestParam("photo") MultipartFile photo) {
+        if (photo.isEmpty() || !photo.getContentType().startsWith("image/")) {
+            return ResponseEntity.badRequest().body("Please upload a valid image file.");
+        }
+
+        try {
+            Optional<Startup> optionalStartup = startupService.getStartupById(id);
+            if (optionalStartup.isEmpty()) {
+                return ResponseEntity.badRequest().body("Startup with ID " + id + " not found.");
+            }
+
+            Startup startup = optionalStartup.get();
+
+            startup.setPhoto(photo.getBytes());
+
+            startupService.updateStartup(id, startup);
+            return ResponseEntity.ok("Photo uploaded successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error uploading photo: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/photo")
+    public ResponseEntity<byte[]> getStartupPhoto(@PathVariable Long id) {
+        Optional<Startup> optionalStartup = startupService.getStartupById(id);
+        if (optionalStartup.isEmpty() || optionalStartup.get().getPhoto() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/jpeg") // Adjust based on your image type
+                .body(optionalStartup.get().getPhoto());
+    }
+
     public static class VerificationRequest {
         private Long startupId;
         private String email;
         private String code;
 
-        public Long getStartupId() { return startupId; }
-        public void setStartupId(Long startupId) { this.startupId = startupId; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getCode() { return code; }
-        public void setCode(String code) { this.code = code; }
+        public Long getStartupId() {
+            return startupId;
+        }
+
+        public void setStartupId(Long startupId) {
+            this.startupId = startupId;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
     }
 }
