@@ -35,4 +35,19 @@ public class UserController {
         List<User> users = userService.allUsers();
         return ResponseEntity.ok(users);
     }
+
+    @GetMapping("/me/role")
+    public ResponseEntity<String> getLoggedInUserRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
+            return ResponseEntity.status(401).body("Unauthorized: No user is logged in");
+        }
+
+        User currentUser = (User) authentication.getPrincipal();
+        String role = currentUser.getRole();
+
+        return ResponseEntity.ok(role);
+    }
 }

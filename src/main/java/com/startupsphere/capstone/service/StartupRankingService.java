@@ -33,6 +33,7 @@ public class StartupRankingService {
 
     /**
      * Calculate overall score for a startup
+     * 
      * @param startup The startup entity to score
      * @return Normalized score between 0-100
      */
@@ -78,19 +79,19 @@ public class StartupRankingService {
         if (startup.getPaidUpCapital() != null) {
             capitalScore = Math.min(startup.getPaidUpCapital() / MAX_FUNDING, 1.0);
         }
-        
+
         double fundingScore = Math.min(startup.getTotalStartupFundingReceived() / MAX_FUNDING, 1.0);
-        
+
         // Funding rounds
         double fundingRoundsScore = Math.min((double) startup.getNumberOfFundingRounds() / MAX_FUNDING_ROUNDS, 1.0);
-        
+
         // Foreign investment (binary: has/doesn't have)
         double foreignInvestmentScore = startup.getNumberOfStartupsWithForeignInvestment() > 0 ? 1.0 : 0.0;
-        
+
         // Government support
         double govtSupportScore = Math.min(
                 startup.getAmountOfGovernmentGrantsOrSubsidiesReceived() / MAX_GOVT_GRANT, 1.0);
-        
+
         // Combine with equal weights within this category
         return (capitalScore + fundingScore + fundingRoundsScore + foreignInvestmentScore + govtSupportScore) / 5.0;
     }
@@ -101,15 +102,15 @@ public class StartupRankingService {
     public double calculateEcosystemScore(Startup startup) {
         // Incubator participation (binary: is/isn't in an incubator)
         double incubatorScore = startup.getNumberOfStartupsInIncubationPrograms() > 0 ? 1.0 : 0.0;
-        
+
         // Mentorship
         double mentorshipScore = Math.min(
                 (double) startup.getNumberOfMentorsOrAdvisorsInvolved() / MAX_MENTORS, 1.0);
-        
+
         // Partnerships
         double partnershipScore = Math.min(
                 (double) startup.getPublicPrivatePartnershipsInvolvingStartups() / MAX_PARTNERSHIPS, 1.0);
-        
+
         // Combine with equal weights within this category
         return (incubatorScore + mentorshipScore + partnershipScore) / 3.0;
     }
@@ -120,16 +121,18 @@ public class StartupRankingService {
     public double calculateEngagementScore(Startup startup) {
         // Profile completeness score
         double profileScore = calculateProfileCompleteness(startup);
-        
+
         // Social media presence score
         double socialMediaScore = calculateSocialMediaPresence(startup);
-        
+
         // Platform engagement (views, likes, bookmarks)
         double viewsScore = Math.min((double) startup.getViewsCount() / MAX_VIEWS, 1.0);
-        double likesScore = Math.min(startup.getLikes() != null ? (double) startup.getLikes().size() / 100.0 : 0.0, 1.0);
-        double bookmarksScore = Math.min(startup.getBookmarks() != null ? (double) startup.getBookmarks().size() / 50.0 : 0.0, 1.0);
+        double likesScore = Math.min(startup.getLikes() != null ? (double) startup.getLikes().size() / 100.0 : 0.0,
+                1.0);
+        double bookmarksScore = Math
+                .min(startup.getBookmarks() != null ? (double) startup.getBookmarks().size() / 50.0 : 0.0, 1.0);
         double platformEngagementScore = (viewsScore + likesScore + bookmarksScore) / 3.0;
-        
+
         // Combine with equal weights within this category
         return (profileScore + socialMediaScore + platformEngagementScore) / 3.0;
     }
@@ -140,88 +143,88 @@ public class StartupRankingService {
     private double calculateProfileCompleteness(Startup startup) {
         int totalFields = 0;
         int filledFields = 0;
-        
+
         // Check each field and count if it's filled
         if (startup.getCompanyName() != null && !startup.getCompanyName().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getCompanyDescription() != null && !startup.getCompanyDescription().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getFoundedDate() != null && !startup.getFoundedDate().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getTypeOfCompany() != null && !startup.getTypeOfCompany().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getNumberOfEmployees() != null && !startup.getNumberOfEmployees().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getPhoneNumber() != null && !startup.getPhoneNumber().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getContactEmail() != null && !startup.getContactEmail().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getStreetAddress() != null && !startup.getStreetAddress().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getCity() != null && !startup.getCity().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getProvince() != null && !startup.getProvince().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getCountry() != null && !startup.getCountry().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getPostalCode() != null && !startup.getPostalCode().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getIndustry() != null && !startup.getIndustry().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getBusinessActivity() != null && !startup.getBusinessActivity().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getFundingStage() != null && !startup.getFundingStage().trim().isEmpty()) {
             filledFields++;
         }
         totalFields++;
-        
+
         if (startup.getPhoto() != null && startup.getPhoto().length > 0) {
             filledFields++;
         }
         totalFields++;
-        
+
         // Calculate completeness percentage
         return (double) filledFields / totalFields;
     }
@@ -231,69 +234,72 @@ public class StartupRankingService {
      */
     private double calculateSocialMediaPresence(Startup startup) {
         int socialMediaCount = 0;
-        
+
         // Count how many social media profiles are filled
         if (startup.getWebsite() != null && !startup.getWebsite().trim().isEmpty()) {
             socialMediaCount++;
         }
-        
+
         if (startup.getFacebook() != null && !startup.getFacebook().trim().isEmpty()) {
             socialMediaCount++;
         }
-        
+
         if (startup.getTwitter() != null && !startup.getTwitter().trim().isEmpty()) {
             socialMediaCount++;
         }
-        
+
         if (startup.getInstagram() != null && !startup.getInstagram().trim().isEmpty()) {
             socialMediaCount++;
         }
-        
+
         if (startup.getLinkedIn() != null && !startup.getLinkedIn().trim().isEmpty()) {
             socialMediaCount++;
         }
-        
+
         // Calculate social media presence score
         return (double) socialMediaCount / MAX_SOCIAL_MEDIA_SCORE;
     }
 
     /**
      * Rank a list of startups based on their overall scores
+     * 
      * @param startups List of startups to rank
      * @return List of startups sorted by ranking
      */
     public List<Startup> rankStartups(List<Startup> startups) {
         return startups.stream()
+                .filter(startup -> "Approved".equalsIgnoreCase(startup.getStatus())) // Filter by status
                 .sorted(Comparator.comparingDouble(this::calculateOverallScore).reversed())
                 .collect(Collectors.toList());
     }
 
     /**
      * Filter and rank startups by industry
+     * 
      * @param startups List of all startups
      * @param industry Industry to filter by
      * @return Ranked list of startups in the specified industry
      */
     public List<Startup> rankStartupsByIndustry(List<Startup> startups, String industry) {
-        if (industry == null || industry.trim().isEmpty() || industry.equalsIgnoreCase("All")) {
-            return rankStartups(startups);
-        }
-        
         return startups.stream()
-                .filter(startup -> industry.equalsIgnoreCase(startup.getIndustry()))
+                .filter(startup -> "Approved".equalsIgnoreCase(startup.getStatus())) // Filter by status
+                .filter(startup -> industry == null || industry.trim().isEmpty() || industry.equalsIgnoreCase("All")
+                        || industry.equalsIgnoreCase(startup.getIndustry()))
                 .sorted(Comparator.comparingDouble(this::calculateOverallScore).reversed())
                 .collect(Collectors.toList());
     }
 
     /**
      * Rank startups by a specific metric instead of the overall score
+     * 
      * @param startups List of startups to rank
-     * @param metric Metric to rank by ("growth", "investment", "ecosystem", "engagement", or "overall")
+     * @param metric   Metric to rank by ("growth", "investment", "ecosystem",
+     *                 "engagement", or "overall")
      * @return List of startups sorted by the specified metric
      */
     public List<Startup> rankStartupsByMetric(List<Startup> startups, String metric) {
         Comparator<Startup> comparator;
-        
+
         switch (metric.toLowerCase()) {
             case "growth":
                 comparator = Comparator.comparingDouble(this::calculateGrowthScore);
@@ -309,10 +315,11 @@ public class StartupRankingService {
                 break;
             case "overall":
             default:
-                comparator = Comparator.comparingDouble(this::calculateOverallScore);         
+                comparator = Comparator.comparingDouble(this::calculateOverallScore);
         }
-        
+
         return startups.stream()
+                .filter(startup -> "Approved".equalsIgnoreCase(startup.getStatus())) // Filter by status
                 .sorted(comparator.reversed())
                 .collect(Collectors.toList());
     }

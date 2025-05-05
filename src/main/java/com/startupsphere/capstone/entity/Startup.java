@@ -54,6 +54,7 @@ public class Startup {
     private Double locationLng;
     private String locationName;
     private String startupCode;
+    private String status;
 
     private double revenue;
     private Double annualRevenue;
@@ -100,7 +101,7 @@ public class Startup {
             int numberOfFundingRounds, int numberOfStartupsWithForeignInvestment,
             double amountOfGovernmentGrantsOrSubsidiesReceived, int numberOfStartupIncubatorsOrAccelerators,
             int numberOfStartupsInIncubationPrograms, int numberOfMentorsOrAdvisorsInvolved,
-            int publicPrivatePartnershipsInvolvingStartups, String verificationCode, Boolean emailVerified) {
+            int publicPrivatePartnershipsInvolvingStartups, String verificationCode, Boolean emailVerified, String status) {
         this.id = id;
         this.user = user;
         this.likes = likes;
@@ -149,6 +150,7 @@ public class Startup {
         this.publicPrivatePartnershipsInvolvingStartups = publicPrivatePartnershipsInvolvingStartups;
         this.verificationCode = verificationCode;
         this.emailVerified = emailVerified;
+        this.status = status;
     }
 
     // Getters and Setters
@@ -158,6 +160,14 @@ public class Startup {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getStatus(){
+        return status;
+    }
+
+    public void setStatus(String status){
+        this.status = status;
     }
 
     public byte[] getPhoto() {

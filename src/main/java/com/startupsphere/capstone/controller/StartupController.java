@@ -215,7 +215,8 @@ public class StartupController {
             return ResponseEntity.ok(Map.of("message", "Verification email sent successfully."));
         } catch (RuntimeException e) {
             logger.error("Error sending verification email: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(Map.of("error", "Error sending verification email: " + e.getMessage()));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Error sending verification email: " + e.getMessage()));
         }
     }
 
@@ -234,25 +235,23 @@ public class StartupController {
             @PathVariable Long id,
             @RequestParam(value = "photo", required = false) MultipartFile photo) {
         logger.info("Received photo upload request for startup ID: {}", id);
-        
+
         // Validate file
         if (photo == null || photo.isEmpty()) {
             logger.warn("Upload attempt with empty or null photo for startup ID: {}", id);
             return ResponseEntity.badRequest().body(
-                new ErrorResponse("Please upload a valid image file.")
-            );
+                    new ErrorResponse("Please upload a valid image file."));
         }
 
-        logger.info("Photo details - Name: {}, Size: {}, Content-Type: {}", 
-            photo.getOriginalFilename(), 
-            photo.getSize(), 
-            photo.getContentType());
+        logger.info("Photo details - Name: {}, Size: {}, Content-Type: {}",
+                photo.getOriginalFilename(),
+                photo.getSize(),
+                photo.getContentType());
 
         if (!photo.getContentType().startsWith("image/")) {
             logger.warn("Invalid file type uploaded for startup ID: {}. Content-Type: {}", id, photo.getContentType());
             return ResponseEntity.badRequest().body(
-                new ErrorResponse("Please upload a valid image file (e.g., JPEG, PNG).")
-            );
+                    new ErrorResponse("Please upload a valid image file (e.g., JPEG, PNG)."));
         }
 
         try {
@@ -261,8 +260,7 @@ public class StartupController {
             if (optionalStartup.isEmpty()) {
                 logger.warn("Startup not found for ID: {}", id);
                 return ResponseEntity.badRequest().body(
-                    new ErrorResponse("Startup with ID " + id + " not found.")
-                );
+                        new ErrorResponse("Startup with ID " + id + " not found."));
             }
 
             Startup startup = optionalStartup.get();
@@ -271,27 +269,24 @@ public class StartupController {
             // Store photo bytes
             byte[] photoBytes = photo.getBytes();
             logger.info("Successfully read photo bytes, size: {}", photoBytes.length);
-            
+
             startup.setPhoto(photoBytes);
             logger.info("Set photo bytes to startup entity");
 
             // Update startup
             Startup updatedStartup = startupService.updateStartup(id, startup);
             logger.info("Successfully updated startup with photo");
-            
+
             return ResponseEntity.ok(
-                new SuccessResponse("Photo uploaded successfully.")
-            );
+                    new SuccessResponse("Photo uploaded successfully."));
         } catch (IOException e) {
             logger.error("Failed to read photo bytes for startup ID: {}", id, e);
             return ResponseEntity.status(500).body(
-                new ErrorResponse("Error processing image file: " + e.getMessage())
-            );
+                    new ErrorResponse("Error processing image file: " + e.getMessage()));
         } catch (Exception e) {
             logger.error("Error uploading photo for startup ID: {}", id, e);
             return ResponseEntity.status(500).body(
-                new ErrorResponse("Error uploading photo: " + e.getMessage())
-            );
+                    new ErrorResponse("Error uploading photo: " + e.getMessage()));
         }
     }
 
@@ -307,6 +302,38 @@ public class StartupController {
         return ResponseEntity.ok()
                 .header("Content-Type", "image/jpeg") // Adjust based on actual image type
                 .body(photo);
+    }
+
+    @GetMapping("/email-verified")
+    public ResponseEntity<List<Startup>> getAllEmailVerifiedStartups() {
+        List<Startup> startups = startupService.getAllEmailVerifiedStartups();
+        return ResponseEntity.ok(startups);
+    }
+
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<Startup> approveStartup(@PathVariable Long id) {
+        try {
+            Startup approvedStartup = startupService.approveStartup(id);
+            return ResponseEntity.ok(approvedStartup);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(null); 
+        }
+    }
+
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<Startup> rejectStartup(@PathVariable Long id) {
+        try {
+            Startup rejectedStartup = startupService.rejectStartup(id);
+            return ResponseEntity.ok(rejectedStartup);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(null); 
+        }
+    }
+
+    @GetMapping("/approved")
+    public ResponseEntity<List<Startup>> getAllApprovedStartups() {
+        List<Startup> startups = startupService.getAllApprovedStartups();
+        return ResponseEntity.ok(startups);
     }
 
     public static class VerificationRequest {

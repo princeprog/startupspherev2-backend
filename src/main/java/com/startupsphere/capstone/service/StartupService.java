@@ -31,6 +31,8 @@ public class StartupService {
     @Transactional
     public Startup createStartup(Startup startup) {
         logger.info("Saving startup: {}", startup.getCompanyName());
+
+        startup.setStatus("In Review");
         return startupRepository.save(startup);
     }
 
@@ -52,7 +54,7 @@ public class StartupService {
                     updatedStartup.setLikes(startup.getLikes());
                     updatedStartup.setBookmarks(startup.getBookmarks());
                     updatedStartup.setViews(startup.getViews());
-                    
+
                     // Update other fields
                     startup.setCompanyName(updatedStartup.getCompanyName());
                     startup.setCompanyDescription(updatedStartup.getCompanyDescription());
@@ -64,6 +66,7 @@ public class StartupService {
                     startup.setStreetAddress(updatedStartup.getStreetAddress());
                     startup.setCountry(updatedStartup.getCountry());
                     startup.setCity(updatedStartup.getCity());
+                    startup.setStatus(updatedStartup.getStatus());
                     startup.setProvince(updatedStartup.getProvince());
                     startup.setPostalCode(updatedStartup.getPostalCode());
                     startup.setIndustry(updatedStartup.getIndustry());
@@ -89,20 +92,26 @@ public class StartupService {
                     startup.setTotalStartupFundingReceived(updatedStartup.getTotalStartupFundingReceived());
                     startup.setAverageFundingPerStartup(updatedStartup.getAverageFundingPerStartup());
                     startup.setNumberOfFundingRounds(updatedStartup.getNumberOfFundingRounds());
-                    startup.setNumberOfStartupsWithForeignInvestment(updatedStartup.getNumberOfStartupsWithForeignInvestment());
-                    startup.setAmountOfGovernmentGrantsOrSubsidiesReceived(updatedStartup.getAmountOfGovernmentGrantsOrSubsidiesReceived());
-                    startup.setNumberOfStartupIncubatorsOrAccelerators(updatedStartup.getNumberOfStartupIncubatorsOrAccelerators());
-                    startup.setNumberOfStartupsInIncubationPrograms(updatedStartup.getNumberOfStartupsInIncubationPrograms());
+                    startup.setNumberOfStartupsWithForeignInvestment(
+                            updatedStartup.getNumberOfStartupsWithForeignInvestment());
+                    startup.setAmountOfGovernmentGrantsOrSubsidiesReceived(
+                            updatedStartup.getAmountOfGovernmentGrantsOrSubsidiesReceived());
+                    startup.setNumberOfStartupIncubatorsOrAccelerators(
+                            updatedStartup.getNumberOfStartupIncubatorsOrAccelerators());
+                    startup.setNumberOfStartupsInIncubationPrograms(
+                            updatedStartup.getNumberOfStartupsInIncubationPrograms());
                     startup.setNumberOfMentorsOrAdvisorsInvolved(updatedStartup.getNumberOfMentorsOrAdvisorsInvolved());
-                    startup.setPublicPrivatePartnershipsInvolvingStartups(updatedStartup.getPublicPrivatePartnershipsInvolvingStartups());
+                    startup.setPublicPrivatePartnershipsInvolvingStartups(
+                            updatedStartup.getPublicPrivatePartnershipsInvolvingStartups());
                     startup.setVerificationCode(updatedStartup.getVerificationCode());
                     startup.setEmailVerified(updatedStartup.getEmailVerified());
                     
+
                     // Update photo if provided
                     if (updatedStartup.getPhoto() != null) {
                         startup.setPhoto(updatedStartup.getPhoto());
                     }
-                    
+
                     return startupRepository.save(startup);
                 })
                 .orElseThrow(() -> new RuntimeException("Startup not found with id: " + id));
@@ -143,23 +152,23 @@ public class StartupService {
 
     public void sendVerificationEmail(Long startupId, String email) {
         logger.info("Attempting to send verification email for startup ID: {} to email: {}", startupId, email);
-        
+
         if (startupRepository.existsByContactEmailAndEmailVerifiedTrue(email)) {
             logger.warn("Email {} is already verified", email);
             throw new RuntimeException("Email is already verified");
         }
-    
+
         Startup startup = startupRepository.findById(startupId)
                 .orElseThrow(() -> {
                     logger.error("Startup not found with id: {}", startupId);
                     return new RuntimeException("Startup not found with id: " + startupId);
                 });
-    
+
         String verificationCode = String.format("%06d", new Random().nextInt(999999));
         startup.setVerificationCode(verificationCode);
         startup.setEmailVerified(false);
         startupRepository.save(startup);
-    
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("Verify Your Email");
@@ -189,5 +198,31 @@ public class StartupService {
         startup.setVerificationCode(null);
         startupRepository.save(startup);
         logger.info("Email verified for startup ID: {}", startupId);
+    }
+
+    public List<Startup> getAllEmailVerifiedStartups() {
+        return startupRepository.findAllVerifiedEmailStartups();
+    }
+
+    @Transactional
+    public Startup approveStartup(Long id) {
+        Startup startup = startupRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Startup not found with id: " + id));
+
+        startup.setStatus("Approved");
+        return startupRepository.save(startup);
+    }
+
+    @Transactional
+    public Startup rejectStartup(Long id) {
+        Startup startup = startupRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Startup not found with id: " + id));
+
+        startup.setStatus("Rejected");
+        return startupRepository.save(startup);
+    }
+
+    public List<Startup> getAllApprovedStartups() {
+        return startupRepository.findAllApprovedStartups();
     }
 }
