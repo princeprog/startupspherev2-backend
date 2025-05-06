@@ -79,7 +79,6 @@ public class AuthenticationController {
     public ResponseEntity<Boolean> checkAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Check if the user is authenticated
         boolean isAuthenticated = authentication != null && authentication.isAuthenticated()
                 && !(authentication.getPrincipal() instanceof String && authentication.getPrincipal().equals("anonymousUser"));
 

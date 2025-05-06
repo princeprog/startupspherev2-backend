@@ -18,7 +18,7 @@ public class Startup {
     private User user;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Like> likes = new ArrayList<>();
 
     @JsonIgnore

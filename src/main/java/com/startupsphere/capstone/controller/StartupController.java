@@ -95,9 +95,9 @@ public class StartupController {
     public ResponseEntity<Void> deleteStartup(@PathVariable Long id) {
         try {
             startupService.deleteStartup(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.noContent().build(); // Return 204 No Content if successful
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).build(); // Return 404 Not Found if the startup does not exist
         }
     }
 
@@ -316,7 +316,7 @@ public class StartupController {
             Startup approvedStartup = startupService.approveStartup(id);
             return ResponseEntity.ok(approvedStartup);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(null); 
+            return ResponseEntity.status(404).body(null);
         }
     }
 
@@ -326,7 +326,7 @@ public class StartupController {
             Startup rejectedStartup = startupService.rejectStartup(id);
             return ResponseEntity.ok(rejectedStartup);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(null); 
+            return ResponseEntity.status(404).body(null);
         }
     }
 

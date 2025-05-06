@@ -105,7 +105,6 @@ public class StartupService {
                             updatedStartup.getPublicPrivatePartnershipsInvolvingStartups());
                     startup.setVerificationCode(updatedStartup.getVerificationCode());
                     startup.setEmailVerified(updatedStartup.getEmailVerified());
-                    
 
                     // Update photo if provided
                     if (updatedStartup.getPhoto() != null) {
@@ -117,7 +116,6 @@ public class StartupService {
                 .orElseThrow(() -> new RuntimeException("Startup not found with id: " + id));
     }
 
-    @Transactional
     public void deleteStartup(Long id) {
         if (!startupRepository.existsById(id)) {
             throw new RuntimeException("Startup not found with id: " + id);
