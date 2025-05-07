@@ -195,11 +195,6 @@ public class StartupRankingService {
         }
         totalFields++;
 
-        if (startup.getCountry() != null && !startup.getCountry().trim().isEmpty()) {
-            filledFields++;
-        }
-        totalFields++;
-
         if (startup.getPostalCode() != null && !startup.getPostalCode().trim().isEmpty()) {
             filledFields++;
         }

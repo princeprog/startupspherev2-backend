@@ -64,7 +64,6 @@ public class StartupService {
                     startup.setPhoneNumber(updatedStartup.getPhoneNumber());
                     startup.setContactEmail(updatedStartup.getContactEmail());
                     startup.setStreetAddress(updatedStartup.getStreetAddress());
-                    startup.setCountry(updatedStartup.getCountry());
                     startup.setCity(updatedStartup.getCity());
                     startup.setStatus(updatedStartup.getStatus());
                     startup.setProvince(updatedStartup.getProvince());
@@ -92,6 +91,8 @@ public class StartupService {
                     startup.setTotalStartupFundingReceived(updatedStartup.getTotalStartupFundingReceived());
                     startup.setAverageFundingPerStartup(updatedStartup.getAverageFundingPerStartup());
                     startup.setNumberOfFundingRounds(updatedStartup.getNumberOfFundingRounds());
+                    startup.setRegion(updatedStartup.getRegion());
+                    startup.setBarangay(updatedStartup.getBarangay());
                     startup.setNumberOfStartupsWithForeignInvestment(
                             updatedStartup.getNumberOfStartupsWithForeignInvestment());
                     startup.setAmountOfGovernmentGrantsOrSubsidiesReceived(

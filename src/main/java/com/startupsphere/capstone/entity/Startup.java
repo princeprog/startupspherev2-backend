@@ -40,7 +40,6 @@ public class Startup {
     private String phoneNumber;
     private String contactEmail;
     private String streetAddress;
-    private String country;
     private String city;
     private String province;
     private String postalCode;
@@ -75,6 +74,8 @@ public class Startup {
     private int numberOfStartupsInIncubationPrograms;
     private int numberOfMentorsOrAdvisorsInvolved;
     private int publicPrivatePartnershipsInvolvingStartups;
+    private String region;
+    private String barangay;
 
     @Column(name = "verification_code")
     private String verificationCode;
@@ -92,7 +93,7 @@ public class Startup {
     public Startup(Long id, User user, List<Like> likes, List<Bookmarks> bookmarks, Integer viewsCount,
             String companyName, String companyDescription, String foundedDate, String typeOfCompany,
             String numberOfEmployees, String phoneNumber, String contactEmail, String streetAddress,
-            String country, String city, String province, String postalCode, String industry, String website,
+            String city, String province, String postalCode, String industry, String website,
             String facebook, String twitter, String instagram, String linkedIn, Double locationLat,
             Double locationLng, String locationName, String startupCode, double revenue, Double annualRevenue,
             Double paidUpCapital, String fundingStage, String businessActivity, String operatingHours,
@@ -101,7 +102,8 @@ public class Startup {
             int numberOfFundingRounds, int numberOfStartupsWithForeignInvestment,
             double amountOfGovernmentGrantsOrSubsidiesReceived, int numberOfStartupIncubatorsOrAccelerators,
             int numberOfStartupsInIncubationPrograms, int numberOfMentorsOrAdvisorsInvolved,
-            int publicPrivatePartnershipsInvolvingStartups, String verificationCode, Boolean emailVerified, String status) {
+            int publicPrivatePartnershipsInvolvingStartups, String verificationCode, Boolean emailVerified,
+            String status, String region, String barangay) {
         this.id = id;
         this.user = user;
         this.likes = likes;
@@ -115,7 +117,6 @@ public class Startup {
         this.phoneNumber = phoneNumber;
         this.contactEmail = contactEmail;
         this.streetAddress = streetAddress;
-        this.country = country;
         this.city = city;
         this.province = province;
         this.postalCode = postalCode;
@@ -151,6 +152,8 @@ public class Startup {
         this.verificationCode = verificationCode;
         this.emailVerified = emailVerified;
         this.status = status;
+        this.region = region;
+        this.barangay = barangay;
     }
 
     // Getters and Setters
@@ -162,18 +165,18 @@ public class Startup {
         this.id = id;
     }
 
-    public String getStatus(){
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(String status){
+    public void setStatus(String status) {
         this.status = status;
     }
 
     public byte[] getPhoto() {
         return photo;
     }
-    
+
     public void setPhoto(byte[] photo) {
         this.photo = photo;
     }
@@ -274,16 +277,24 @@ public class Startup {
         this.streetAddress = streetAddress;
     }
 
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
     public String getCity() {
         return city;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public String getBarangay() {
+        return barangay;
+    }
+
+    public void setBarangay(String barangay) {
+        this.barangay = barangay;
     }
 
     public void setCity(String city) {
