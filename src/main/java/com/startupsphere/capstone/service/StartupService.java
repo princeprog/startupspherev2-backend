@@ -7,10 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -48,14 +50,12 @@ public class StartupService {
     public Startup updateStartup(Long id, Startup updatedStartup) {
         return startupRepository.findById(id)
                 .map(startup -> {
-                    // Preserve relationships
                     updatedStartup.setId(startup.getId());
                     updatedStartup.setUser(startup.getUser());
                     updatedStartup.setLikes(startup.getLikes());
                     updatedStartup.setBookmarks(startup.getBookmarks());
                     updatedStartup.setViews(startup.getViews());
 
-                    // Update other fields
                     startup.setCompanyName(updatedStartup.getCompanyName());
                     startup.setCompanyDescription(updatedStartup.getCompanyDescription());
                     startup.setFoundedDate(updatedStartup.getFoundedDate());
@@ -107,7 +107,6 @@ public class StartupService {
                     startup.setVerificationCode(updatedStartup.getVerificationCode());
                     startup.setEmailVerified(updatedStartup.getEmailVerified());
 
-                    // Update photo if provided
                     if (updatedStartup.getPhoto() != null) {
                         startup.setPhoto(updatedStartup.getPhoto());
                     }
@@ -151,11 +150,6 @@ public class StartupService {
 
     public void sendVerificationEmail(Long startupId, String email) {
         logger.info("Attempting to send verification email for startup ID: {} to email: {}", startupId, email);
-
-        if (startupRepository.existsByContactEmailAndEmailVerifiedTrue(email)) {
-            logger.warn("Email {} is already verified", email);
-            throw new RuntimeException("Email is already verified");
-        }
 
         Startup startup = startupRepository.findById(startupId)
                 .orElseThrow(() -> {
@@ -223,5 +217,33 @@ public class StartupService {
 
     public List<Startup> getAllApprovedStartups() {
         return startupRepository.findAllApprovedStartups();
+    }
+
+    @Scheduled(cron = "0 0 9 * * ?")
+    @Transactional
+    public void sendUpdateReminderEmails() {
+        logger.info("Checking for startups needing update reminders");
+        LocalDateTime sixMonthsAgo = LocalDateTime.now().minusMonths(6); // Change to .minusMinutes(5) for testing
+        List<Startup> startups = startupRepository.findStartupsNotUpdatedSince(sixMonthsAgo);
+
+        for (Startup startup : startups) {
+            try {
+                SimpleMailMessage message = new SimpleMailMessage();
+                message.setTo(startup.getContactEmail());
+                message.setSubject("Reminder: Update Your Startup Information");
+                message.setText(
+                        "Dear " + startup.getCompanyName() + ",\n\n" +
+                        "It has been over 6 months since your startup information was last updated. " +
+                        "To ensure your data remains relevant and verified, please update your details.\n\n" +
+                        "You can update your information by logging into your account and visiting the startup dashboard.\n" +
+                        "Link: [Add Frontend URL Link]" +
+                        "Thank you,\nStartupSphere Team"
+                );
+                mailSender.send(message);
+                logger.info("Reminder email sent to {} for startup ID: {}", startup.getContactEmail(), startup.getId());
+            } catch (Exception e) {
+                logger.error("Failed to send reminder email to {}: {}", startup.getContactEmail(), e.getMessage(), e);
+            }
+        }
     }
 }
