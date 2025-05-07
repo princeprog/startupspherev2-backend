@@ -12,6 +12,7 @@ import io.jsonwebtoken.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,14 +75,14 @@ public class StartupController {
         return ResponseEntity.ok(startups);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     public ResponseEntity<Startup> getStartupById(@PathVariable Long id) {
         return startupService.getStartupById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:[0-9]+}")
     public ResponseEntity<Startup> updateStartup(@PathVariable Long id, @RequestBody Startup updatedStartup) {
         try {
             Startup updated = startupService.updateStartup(id, updatedStartup);
@@ -91,17 +92,17 @@ public class StartupController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:[0-9]+}")
     public ResponseEntity<Void> deleteStartup(@PathVariable Long id) {
         try {
             startupService.deleteStartup(id);
-            return ResponseEntity.noContent().build(); // Return 204 No Content if successful
+            return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).build(); // Return 404 Not Found if the startup does not exist
+            return ResponseEntity.status(404).build();
         }
     }
 
-    @GetMapping("/{id}/views")
+    @GetMapping("/{id:[0-9]+}/views")
     public ResponseEntity<Integer> getViewsByStartupId(@PathVariable Long id) {
         Optional<Startup> optionalStartup = startupRepository.findById(id);
         if (optionalStartup.isPresent()) {
@@ -112,7 +113,7 @@ public class StartupController {
         }
     }
 
-    @PutMapping("/{id}/increment-views")
+    @PutMapping("/{id:[0-9]+}/increment-views")
     public ResponseEntity<Integer> incrementViews(@PathVariable Long id) {
         Optional<Startup> optionalStartup = startupRepository.findById(id);
         if (optionalStartup.isPresent()) {
@@ -125,7 +126,7 @@ public class StartupController {
         }
     }
 
-    @PutMapping("/{startupId}/upload-csv")
+    @PutMapping("/{startupId:[0-9]+}/upload-csv")
     public ResponseEntity<String> uploadStartupCsv(
             @PathVariable Long startupId,
             @RequestParam("file") MultipartFile file) {
@@ -186,7 +187,7 @@ public class StartupController {
         }
     }
 
-    @GetMapping("/{id}/view-count")
+    @GetMapping("/{id:[0-9]+}/view-count")
     public ResponseEntity<Integer> getStartupViews(@PathVariable Long id) {
         Optional<Startup> optionalStartup = startupService.getStartupById(id);
         if (optionalStartup.isPresent()) {
@@ -215,6 +216,10 @@ public class StartupController {
             return ResponseEntity.ok(Map.of("message", "Verification email sent successfully."));
         } catch (RuntimeException e) {
             logger.error("Error sending verification email: {}", e.getMessage(), e);
+            if (e.getMessage().contains("Email is already verified")) {
+                logger.info("Email already verified for startup ID: {}. Resending verification email.", request.getStartupId());
+                return ResponseEntity.ok(Map.of("message", "Verification email resent successfully."));
+            }
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Error sending verification email: " + e.getMessage()));
         }
@@ -230,13 +235,12 @@ public class StartupController {
         }
     }
 
-    @PutMapping("/{id}/upload-photo")
+    @PutMapping("/{id:[0-9]+}/upload-photo")
     public ResponseEntity<?> uploadStartupPhoto(
             @PathVariable Long id,
             @RequestParam(value = "photo", required = false) MultipartFile photo) {
         logger.info("Received photo upload request for startup ID: {}", id);
 
-        // Validate file
         if (photo == null || photo.isEmpty()) {
             logger.warn("Upload attempt with empty or null photo for startup ID: {}", id);
             return ResponseEntity.badRequest().body(
@@ -255,7 +259,6 @@ public class StartupController {
         }
 
         try {
-            // Retrieve startup
             Optional<Startup> optionalStartup = startupService.getStartupById(id);
             if (optionalStartup.isEmpty()) {
                 logger.warn("Startup not found for ID: {}", id);
@@ -266,14 +269,12 @@ public class StartupController {
             Startup startup = optionalStartup.get();
             logger.info("Found startup: {}", startup.getCompanyName());
 
-            // Store photo bytes
             byte[] photoBytes = photo.getBytes();
             logger.info("Successfully read photo bytes, size: {}", photoBytes.length);
 
             startup.setPhoto(photoBytes);
             logger.info("Set photo bytes to startup entity");
 
-            // Update startup
             Startup updatedStartup = startupService.updateStartup(id, startup);
             logger.info("Successfully updated startup with photo");
 
@@ -290,7 +291,7 @@ public class StartupController {
         }
     }
 
-    @GetMapping("/{id}/photo")
+    @GetMapping("/{id:[0-9]+}/photo")
     public ResponseEntity<byte[]> getStartupPhoto(@PathVariable Long id) {
         Optional<Startup> optionalStartup = startupService.getStartupById(id);
         if (optionalStartup.isEmpty() || optionalStartup.get().getPhoto() == null) {
@@ -300,7 +301,7 @@ public class StartupController {
 
         byte[] photo = optionalStartup.get().getPhoto();
         return ResponseEntity.ok()
-                .header("Content-Type", "image/jpeg") // Adjust based on actual image type
+                .header("Content-Type", "image/jpeg")
                 .body(photo);
     }
 
@@ -310,7 +311,7 @@ public class StartupController {
         return ResponseEntity.ok(startups);
     }
 
-    @PutMapping("/{id}/approve")
+    @PutMapping("/{id:[0-9]+}/approve")
     public ResponseEntity<Startup> approveStartup(@PathVariable Long id) {
         try {
             Startup approvedStartup = startupService.approveStartup(id);
@@ -320,7 +321,7 @@ public class StartupController {
         }
     }
 
-    @PutMapping("/{id}/reject")
+    @PutMapping("/{id:[0-9]+}/reject")
     public ResponseEntity<Startup> rejectStartup(@PathVariable Long id) {
         try {
             Startup rejectedStartup = startupService.rejectStartup(id);
@@ -334,6 +335,20 @@ public class StartupController {
     public ResponseEntity<List<Startup>> getAllApprovedStartups() {
         List<Startup> startups = startupService.getAllApprovedStartups();
         return ResponseEntity.ok(startups);
+    }
+
+    @PostMapping("/test-reminder-emails")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> testReminderEmails() {
+        try {
+            logger.info("Manually triggering reminder emails");
+            startupService.sendUpdateReminderEmails();
+            return ResponseEntity.ok(Map.of("message", "Reminder emails triggered successfully"));
+        } catch (Exception e) {
+            logger.error("Error triggering reminder emails: {}", e.getMessage(), e);
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Failed to trigger reminder emails: " + e.getMessage()));
+        }
     }
 
     public static class VerificationRequest {

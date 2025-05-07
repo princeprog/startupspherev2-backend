@@ -2,6 +2,7 @@ package com.startupsphere.capstone.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,6 +88,12 @@ public class Startup {
     @Column(name = "photo", columnDefinition = "LONGBLOB")
     private byte[] photo;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "last_updated", nullable = false)
+    private LocalDateTime lastUpdated;
+
     public Startup() {
     }
 
@@ -103,7 +110,7 @@ public class Startup {
             double amountOfGovernmentGrantsOrSubsidiesReceived, int numberOfStartupIncubatorsOrAccelerators,
             int numberOfStartupsInIncubationPrograms, int numberOfMentorsOrAdvisorsInvolved,
             int publicPrivatePartnershipsInvolvingStartups, String verificationCode, Boolean emailVerified,
-            String status, String region, String barangay) {
+            String status, String region, String barangay, LocalDateTime createdAt, LocalDateTime lastUpdated) {
         this.id = id;
         this.user = user;
         this.likes = likes;
@@ -154,6 +161,19 @@ public class Startup {
         this.status = status;
         this.region = region;
         this.barangay = barangay;
+        this.createdAt = createdAt;
+        this.lastUpdated = lastUpdated;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.lastUpdated = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.lastUpdated = LocalDateTime.now();
     }
 
     // Getters and Setters
@@ -571,5 +591,21 @@ public class Startup {
 
     public void setViews(List<Views> views) {
         this.views = views;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(LocalDateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
 }

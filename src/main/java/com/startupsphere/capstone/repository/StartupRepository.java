@@ -1,5 +1,6 @@
 package com.startupsphere.capstone.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,4 +23,7 @@ public interface StartupRepository extends JpaRepository<Startup, Long> {
 
     @Query("SELECT s FROM Startup s WHERE s.status = 'Approved'")
     List<Startup> findAllApprovedStartups();
+
+    @Query("SELECT s FROM Startup s WHERE s.lastUpdated < :threshold AND s.emailVerified = true")
+    List<Startup> findStartupsNotUpdatedSince(LocalDateTime threshold);
 }
