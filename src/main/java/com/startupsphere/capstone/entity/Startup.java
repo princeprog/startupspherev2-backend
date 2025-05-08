@@ -88,10 +88,10 @@ public class Startup {
     @Column(name = "photo", columnDefinition = "LONGBLOB")
     private byte[] photo;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = true, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "last_updated", nullable = false)
+    @Column(name = "last_updated", nullable = true)
     private LocalDateTime lastUpdated;
 
     public Startup() {
