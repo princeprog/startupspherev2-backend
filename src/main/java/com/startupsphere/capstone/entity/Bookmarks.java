@@ -14,7 +14,7 @@ public class Bookmarks {
     private Instant timestamp = Instant.now();
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "users")
+    @JoinColumn(name = "users", nullable = true)
     private User user;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -78,4 +78,3 @@ public class Bookmarks {
         this.investor = investor;
     }
 }
-

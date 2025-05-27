@@ -19,15 +19,15 @@ public class Startup {
     private User user;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "startup", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookmarks> bookmarks = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "startup", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Views> views = new ArrayList<>();
 
     @Column(name = "views_count", nullable = false)

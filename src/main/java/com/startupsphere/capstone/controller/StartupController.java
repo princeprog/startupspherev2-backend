@@ -94,11 +94,21 @@ public class StartupController {
 
     @DeleteMapping("/{id:[0-9]+}")
     public ResponseEntity<Void> deleteStartup(@PathVariable Long id) {
+        logger.info("Received request to delete startup with id: {}", id);
+
         try {
             startupService.deleteStartup(id);
+            logger.info("Successfully deleted startup with id: {}", id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).build();
+            logger.error("Error deleting startup with id: {}. Error: {}", id, e.getMessage(), e);
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.status(404).build();
+            }
+            return ResponseEntity.status(500).build();
+        } catch (Exception e) {
+            logger.error("Unexpected error deleting startup with id: {}. Error: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(500).build();
         }
     }
 
@@ -217,7 +227,8 @@ public class StartupController {
         } catch (RuntimeException e) {
             logger.error("Error sending verification email: {}", e.getMessage(), e);
             if (e.getMessage().contains("Email is already verified")) {
-                logger.info("Email already verified for startup ID: {}. Resending verification email.", request.getStartupId());
+                logger.info("Email already verified for startup ID: {}. Resending verification email.",
+                        request.getStartupId());
                 return ResponseEntity.ok(Map.of("message", "Verification email resent successfully."));
             }
             return ResponseEntity.badRequest()

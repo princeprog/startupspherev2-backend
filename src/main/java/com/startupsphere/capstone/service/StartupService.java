@@ -1,7 +1,12 @@
 package com.startupsphere.capstone.service;
 
+import com.startupsphere.capstone.entity.Bookmarks;
+import com.startupsphere.capstone.entity.Like;
 import com.startupsphere.capstone.entity.Startup;
 import com.startupsphere.capstone.entity.User;
+import com.startupsphere.capstone.entity.Views;
+import com.startupsphere.capstone.repository.BookmarksRepository;
+import com.startupsphere.capstone.repository.LikeRepository;
 import com.startupsphere.capstone.repository.StartupRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.startupsphere.capstone.repository.ViewsRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,10 +29,21 @@ public class StartupService {
     private static final Logger logger = LoggerFactory.getLogger(StartupService.class);
 
     private final StartupRepository startupRepository;
+    private final ViewsRepository viewsRepository;
+    private final LikeRepository likeRepository;
+    private final BookmarksRepository bookmarksRepository;
     private final JavaMailSender mailSender;
 
-    public StartupService(StartupRepository startupRepository, JavaMailSender mailSender) {
+    public StartupService(
+            StartupRepository startupRepository,
+            ViewsRepository viewsRepository,
+            LikeRepository likeRepository,
+            BookmarksRepository bookmarksRepository,
+            JavaMailSender mailSender) {
         this.startupRepository = startupRepository;
+        this.viewsRepository = viewsRepository;
+        this.likeRepository = likeRepository;
+        this.bookmarksRepository = bookmarksRepository;
         this.mailSender = mailSender;
     }
 
@@ -116,11 +133,86 @@ public class StartupService {
                 .orElseThrow(() -> new RuntimeException("Startup not found with id: " + id));
     }
 
+    @Transactional
     public void deleteStartup(Long id) {
-        if (!startupRepository.existsById(id)) {
-            throw new RuntimeException("Startup not found with id: " + id);
+        logger.info("Attempting to delete startup with id: {}", id);
+
+        try {
+            // First verify the startup exists
+            if (!startupRepository.existsById(id)) {
+                throw new RuntimeException("Startup not found with id: " + id);
+            }
+
+            // Delete related entities first using bulk operations to avoid cascade issues
+            // This approach bypasses the entity relationships and directly deletes from DB
+            viewsRepository.deleteByStartupId(id);
+            likeRepository.deleteByStartupId(id);
+            bookmarksRepository.deleteByStartupId(id);
+
+            // Force flush to ensure all related entities are deleted
+            startupRepository.flush();
+
+            // Now safely delete the startup
+            startupRepository.deleteById(id);
+
+            logger.info("Successfully deleted startup with id: {}", id);
+
+        } catch (Exception e) {
+            logger.error("Error deleting startup with id: {}. Error: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete startup with id: " + id + ". Error: " + e.getMessage());
         }
-        startupRepository.deleteById(id);
+    }
+
+    // Alternative Option 2: Manual deletion with proper repository methods
+    @Transactional
+    public void deleteStartupManual(Long id) {
+        logger.info("Attempting to delete startup with id: {}", id);
+
+        try {
+            Startup startup = startupRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Startup not found with id: " + id));
+
+            // Delete related entities using repository methods (bulk operations)
+            viewsRepository.deleteByStartup(startup);
+            likeRepository.deleteByStartup(startup);
+            bookmarksRepository.deleteByStartup(startup);
+
+            // Now delete the startup
+            startupRepository.delete(startup);
+
+            logger.info("Successfully deleted startup with id: {}", id);
+
+        } catch (Exception e) {
+            logger.error("Error deleting startup with id: {}. Error: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete startup with id: " + id + ". Error: " + e.getMessage());
+        }
+    }
+
+    // Option 3: Using JPQL bulk delete (most efficient for large datasets)
+    @Transactional
+    public void deleteStartupBulk(Long id) {
+        logger.info("Attempting to delete startup with id: {}", id);
+
+        try {
+            // Verify startup exists
+            if (!startupRepository.existsById(id)) {
+                throw new RuntimeException("Startup not found with id: " + id);
+            }
+
+            // Delete related entities using bulk operations
+            viewsRepository.deleteByStartupId(id);
+            likeRepository.deleteByStartupId(id);
+            bookmarksRepository.deleteByStartupId(id);
+
+            // Delete the startup
+            startupRepository.deleteById(id);
+
+            logger.info("Successfully deleted startup with id: {}", id);
+
+        } catch (Exception e) {
+            logger.error("Error deleting startup with id: {}. Error: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete startup with id: " + id + ". Error: " + e.getMessage());
+        }
     }
 
     public List<Startup> searchStartups(String query) {
@@ -233,12 +325,12 @@ public class StartupService {
                 message.setSubject("Reminder: Update Your Startup Information");
                 message.setText(
                         "Dear " + startup.getCompanyName() + ",\n\n" +
-                        "It has been over 6 months since your startup information was last updated. " +
-                        "To ensure your data remains relevant and verified, please update your details.\n\n" +
-                        "You can update your information by logging into your account and visiting the startup dashboard.\n" +
-                        "Link: [Add Frontend URL Link]" +
-                        "Thank you,\nStartupSphere Team"
-                );
+                                "It has been over 6 months since your startup information was last updated. " +
+                                "To ensure your data remains relevant and verified, please update your details.\n\n" +
+                                "You can update your information by logging into your account and visiting the startup dashboard.\n"
+                                +
+                                "Link: [Add Frontend URL Link]" +
+                                "Thank you,\nStartupSphere Team");
                 mailSender.send(message);
                 logger.info("Reminder email sent to {} for startup ID: {}", startup.getContactEmail(), startup.getId());
             } catch (Exception e) {

@@ -13,11 +13,11 @@ public class Views {
     private Instant timestamp = Instant.now();
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "startup_id", nullable = false)
+    @JoinColumn(name = "startup_id", nullable = true)
     private Startup startup;
 
     public Views() {

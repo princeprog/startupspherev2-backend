@@ -19,12 +19,12 @@ public class Like {
     private Instant timestamp;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "userId", nullable = true)
     @JsonIgnore 
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "startupId")
+    @JoinColumn(name = "startupId", nullable = true)
     @JsonIgnore 
     private Startup startup;
 
