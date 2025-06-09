@@ -30,6 +30,10 @@ public class Startup {
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Views> views = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notifications> notifications;
+
     @Column(name = "views_count", nullable = false)
     private Integer viewsCount = 0;
 

@@ -53,6 +53,7 @@ public class StartupRankingController {
             data.put("investmentScore", Math.round(rankingService.calculateInvestmentScore(startup) * 100));
             data.put("ecosystemScore", Math.round(rankingService.calculateEcosystemScore(startup) * 100));
             data.put("engagementScore", Math.round(rankingService.calculateEngagementScore(startup) * 100));
+            data.put("totalFunding", startup.getTotalStartupFundingReceived());
             return data;
         }).collect(Collectors.toList());
 
@@ -120,6 +121,7 @@ public class StartupRankingController {
             data.put("industry", startup.getIndustry());
             data.put("score", Math.round(rankingService.calculateOverallScore(startup)));
             data.put("growthRate", startup.getAverageStartupGrowthRate());
+            data.put("totalFunding", startup.getTotalStartupFundingReceived());
             return data;
         }).collect(Collectors.toList());
 
