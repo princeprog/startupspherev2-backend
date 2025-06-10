@@ -2,6 +2,7 @@ package com.startupsphere.capstone.controller;
 
 import java.util.List;
 
+import org.apache.catalina.security.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.startupsphere.capstone.configs.SecurityUtils;
 import com.startupsphere.capstone.dtos.NotificationRequest;
 import com.startupsphere.capstone.entity.Notifications;
 import com.startupsphere.capstone.responses.ApiResponse;
@@ -79,7 +81,7 @@ public class NotificationController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteNotification(@PathVariable int id){
+    public ResponseEntity<ApiResponse> deleteNotification(@PathVariable int id) {
         try {
             logger.info("Deleting notification with id: {}", id);
             boolean deleted = notificationService.deleteNotification(id);
@@ -87,61 +89,106 @@ public class NotificationController {
         } catch (IllegalArgumentException e) {
             logger.warn("Notification not found with id: {}", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ApiResponse(false, "Notification not found with id: {}", id));
+                    .body(new ApiResponse(false, "Notification not found with id: {}", id));
         } catch (Exception e) {
             logger.error("Error deleting notifcation: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ApiResponse(false, "Error deleting notification", null));
+                    .body(new ApiResponse(false, "Error deleting notification", null));
         }
     }
 
     @GetMapping("/count")
-    public ResponseEntity<ApiResponse> getNotificationsCount(){
+    public ResponseEntity<ApiResponse> getNotificationsCount() {
         try {
             logger.info("Fetching notifications count");
             long count = notificationService.getNotificationsCount();
             return ResponseEntity.ok()
-            .body(new ApiResponse(true, "Notifications count fetched successfully", count));
+                    .body(new ApiResponse(true, "Notifications count fetched successfully", count));
         } catch (Exception e) {
             logger.error("Error retrieving notifications count: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ApiResponse(false, "Failed to get notifications count", null));
+                    .body(new ApiResponse(false, "Failed to get notifications count", null));
         }
     }
 
     @GetMapping("/unviewed/count")
-    public ResponseEntity<ApiResponse> getUnviewedCount(){
+    public ResponseEntity<ApiResponse> getUnviewedCount() {
         try {
             long count = notificationService.getUnviewedCount();
             return ResponseEntity.ok()
-            .body(new ApiResponse(true, "Unviewed count retrieved", count));
+                    .body(new ApiResponse(true, "Unviewed count retrieved", count));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ApiResponse(false, "Error getting unviewed count", null));
+                    .body(new ApiResponse(false, "Error getting unviewed count", null));
         }
     }
 
     @GetMapping("/new")
-    public ResponseEntity<ApiResponse> getUnviewedNotifications(){
+    public ResponseEntity<ApiResponse> getUnviewedNotifications() {
         try {
             List<Notifications> notifications = notificationService.getUnviewedNotifications();
             return ResponseEntity.ok()
-            .body(new ApiResponse(true, "Unviewed Notifications retrieved successfully", notifications));
+                    .body(new ApiResponse(true, "Unviewed Notifications retrieved successfully", notifications));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ApiResponse(false, "Error retrieving unviewed notifications", null));
+                    .body(new ApiResponse(false, "Error retrieving unviewed notifications", null));
         }
     }
 
     @PutMapping("/{id}/view")
-    public ResponseEntity<ApiResponse> markAsViewed(@PathVariable int id){
+    public ResponseEntity<ApiResponse> markAsViewed(@PathVariable int id) {
         try {
             Notifications viewed = notificationService.markAsViewed(id);
             return ResponseEntity.ok()
-            .body(new ApiResponse(true,"Marked as viewed successfully", viewed));
+                    .body(new ApiResponse(true, "Marked as viewed successfully", viewed));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ApiResponse(false,"Error marking as viewed", null));
+                    .body(new ApiResponse(false, "Error marking as viewed", null));
+        }
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse> getUserNotifications() {
+        try {
+            Integer currentUserId = SecurityUtils.getCurrentUserId();
+            logger.info("fetching user notifications with id: ", currentUserId);
+            List<Notifications> notifications = notificationService.getUserNotifications(currentUserId);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse(true, "User notifications successfully fetched", notifications));
+        } catch (Exception e) {
+            logger.error("Error fetching user notifications: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new ApiResponse(false, "Error fetching user notifications", null));
+        }
+    }
+
+    @GetMapping("/my/new")
+    public ResponseEntity<ApiResponse> getUserUnviewedNotifications(){
+        try {
+            Integer currentUserId = SecurityUtils.getCurrentUserId();
+            logger.info("Fetching user unviewed notifications: {}", currentUserId);
+            List<Notifications> notifications = notificationService.getUserUnviewedNotifications(currentUserId);
+            return ResponseEntity.ok()
+            .body(new ApiResponse(true, "Users new notifications fetched successfully", notifications));
+        } catch (Exception e) {
+            logger.error("Error fetching users new notifications: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new ApiResponse(false, "Error fetching users new notifications", null));
+        }
+    }
+
+    @GetMapping("/new/count")
+    public ResponseEntity<ApiResponse> getUserUnviewedCount(){
+        try {
+            Integer currentUserId = SecurityUtils.getCurrentUserId();
+            logger.info("Fetching count new notifications: ",currentUserId);
+            long count = notificationService.getUserUnviewedCount(currentUserId);
+            return ResponseEntity.ok()
+            .body(new ApiResponse(true, "Count of new notifications fetched successfully", count));
+        } catch (Exception e) {
+            logger.error("Error fetching count of new notifications: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new ApiResponse(false, "Error fetching count of new user notifications", null));
         }
     }
 

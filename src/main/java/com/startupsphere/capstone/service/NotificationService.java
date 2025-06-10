@@ -112,4 +112,31 @@ public class NotificationService {
     public List<Notifications> getUnviewedNotifications(){
         return nrepo.findByIsViewedFalse();
     }
+
+    public List<Notifications> getUserNotifications(Integer userId){
+        try {
+            return nrepo.findByUserIdOrderByIdDesc(userId);
+        } catch (Exception e) {
+            logger.error("Error retrieving notifications: {}", e.getMessage());
+            throw new RuntimeException("Error fetching notifications",e);
+        }
+    }
+
+    public List<Notifications> getUserUnviewedNotifications(Integer userId){
+        try {
+            return nrepo.findByUserIdAndIsViewedFalse(userId);
+        } catch (Exception e) {
+            logger.error("Error fetching user notifications: {}", e.getMessage());
+            throw new RuntimeException("Error retrieving user notifications",e);
+        }
+    }
+
+    public long getUserUnviewedCount(Integer userId){
+        try {
+            return nrepo.countByUserIdAndIsViewedFalse(userId);
+        } catch (Exception e) {
+            logger.error("Error counting user unviewed notifications: {}", e.getMessage());
+            throw new RuntimeException("Error counting unviewed notifications",e);
+        }
+    }
 }

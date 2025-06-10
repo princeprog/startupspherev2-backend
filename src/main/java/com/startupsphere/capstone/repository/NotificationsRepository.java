@@ -11,4 +11,7 @@ import com.startupsphere.capstone.entity.Notifications;
 public interface NotificationsRepository extends JpaRepository<Notifications, Integer> {
     long countByIsViewedFalse();
     List<Notifications> findByIsViewedFalse();
+    List<Notifications> findByUserIdOrderByIdDesc(Integer userId);
+    List<Notifications> findByUserIdAndIsViewedFalse(Integer userId);
+    long countByUserIdAndIsViewedFalse(Integer userId);
 }
