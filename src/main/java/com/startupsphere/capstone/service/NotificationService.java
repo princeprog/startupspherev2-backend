@@ -15,6 +15,7 @@ import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.repository.NotificationsRepository;
 import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.repository.UserRepository;
+import com.startupsphere.capstone.responses.NotificationRemarks;
 
 @Service
 public class NotificationService {
@@ -139,4 +140,28 @@ public class NotificationService {
             throw new RuntimeException("Error counting unviewed notifications",e);
         }
     }
+
+    public Notifications createStartupApprovalNotification(Startup startup, String status){
+        NotificationRequest request = new NotificationRequest();
+
+        switch (status.toLowerCase()) {
+            case "approved":
+                request.setRemarks(String.format(NotificationRemarks.STARTUP_APPROVED, startup.getCompanyName()));
+                break;
+            case "rejected":
+                request.setRemarks(String.format(NotificationRemarks.STARTUP_REJECTED, startup.getCompanyName()));
+                break;
+            case "in review":
+                request.setRemarks(String.format(NotificationRemarks.STARTUP_SUBMITTED, startup.getCompanyName()));
+                break;
+            default:
+                break;
+        }
+
+        request.setStartupId(startup.getId());
+        request.setUserId(startup.getUser().getId());
+
+        return createNotifications(request);
+    }
+
 }

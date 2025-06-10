@@ -21,8 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.startupsphere.capstone.configs.SecurityUtils;
 import com.startupsphere.capstone.dtos.NotificationRequest;
 import com.startupsphere.capstone.entity.Notifications;
+import com.startupsphere.capstone.entity.Startup;
 import com.startupsphere.capstone.responses.ApiResponse;
 import com.startupsphere.capstone.service.NotificationService;
+import com.startupsphere.capstone.service.StartupService;
 
 @RestController
 @RequestMapping("/notifications")
@@ -32,6 +34,9 @@ public class NotificationController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private StartupService startupService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -158,37 +163,65 @@ public class NotificationController {
         } catch (Exception e) {
             logger.error("Error fetching user notifications: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ApiResponse(false, "Error fetching user notifications", null));
+                    .body(new ApiResponse(false, "Error fetching user notifications", null));
         }
     }
 
     @GetMapping("/my/new")
-    public ResponseEntity<ApiResponse> getUserUnviewedNotifications(){
+    public ResponseEntity<ApiResponse> getUserUnviewedNotifications() {
         try {
             Integer currentUserId = SecurityUtils.getCurrentUserId();
             logger.info("Fetching user unviewed notifications: {}", currentUserId);
             List<Notifications> notifications = notificationService.getUserUnviewedNotifications(currentUserId);
             return ResponseEntity.ok()
-            .body(new ApiResponse(true, "Users new notifications fetched successfully", notifications));
+                    .body(new ApiResponse(true, "Users new notifications fetched successfully", notifications));
         } catch (Exception e) {
             logger.error("Error fetching users new notifications: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ApiResponse(false, "Error fetching users new notifications", null));
+                    .body(new ApiResponse(false, "Error fetching users new notifications", null));
         }
     }
 
     @GetMapping("/new/count")
-    public ResponseEntity<ApiResponse> getUserUnviewedCount(){
+    public ResponseEntity<ApiResponse> getUserUnviewedCount() {
         try {
             Integer currentUserId = SecurityUtils.getCurrentUserId();
-            logger.info("Fetching count new notifications: ",currentUserId);
+            logger.info("Fetching count new notifications: ", currentUserId);
             long count = notificationService.getUserUnviewedCount(currentUserId);
             return ResponseEntity.ok()
-            .body(new ApiResponse(true, "Count of new notifications fetched successfully", count));
+                    .body(new ApiResponse(true, "Count of new notifications fetched successfully", count));
         } catch (Exception e) {
             logger.error("Error fetching count of new notifications: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ApiResponse(false, "Error fetching count of new user notifications", null));
+                    .body(new ApiResponse(false, "Error fetching count of new user notifications", null));
+        }
+    }
+
+    @PutMapping("/startups/{id}/approve")
+    public ResponseEntity<ApiResponse> approveStartup(@PathVariable long id) {
+        try {
+            Startup startup = startupService.approveStartup(id);
+            Notifications notifications = notificationService.createStartupApprovalNotification(startup, "approved");
+            return ResponseEntity.ok()
+                    .body(new ApiResponse(true, "Startup approved successfully", startup));
+        } catch (Exception e) {
+            logger.error("Error approving startup: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new ApiResponse(false,"Error approving startup: {}", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/startups/{id}/reject")
+    public ResponseEntity<ApiResponse> rejectStartup(@PathVariable long id) {
+        try {
+            Startup startup = startupService.rejectStartup(id);
+            Notifications notifications = notificationService.createStartupApprovalNotification(startup, "rejected");
+            return ResponseEntity.ok()
+                    .body(new ApiResponse(true, "Startup rejected successfully", startup));
+        } catch (Exception e) {
+            logger.error("Error rejecting startup: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new ApiResponse(false,"Error rejecting startup: {}", e.getMessage()));
         }
     }
 
