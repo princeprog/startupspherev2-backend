@@ -22,6 +22,7 @@ import com.startupsphere.capstone.configs.SecurityUtils;
 import com.startupsphere.capstone.dtos.NotificationRequest;
 import com.startupsphere.capstone.entity.Notifications;
 import com.startupsphere.capstone.entity.Startup;
+import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.responses.ApiResponse;
 import com.startupsphere.capstone.service.NotificationService;
 import com.startupsphere.capstone.service.StartupService;
@@ -38,14 +39,18 @@ public class NotificationController {
     @Autowired
     private StartupService startupService;
 
+    @Autowired 
+    private StartupRepository srepo;
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ApiResponse> createNotification(@RequestBody NotificationRequest request) {
         try {
             logger.info("Creating new notification");
-            Notifications created = notificationService.createNotifications(request);
+            Startup startup = srepo.findById(request.getStartupId()).orElseThrow(()-> new IllegalArgumentException("Startup not found"));
+            Notifications notifications = notificationService.createStartupApprovalNotification(startup, "in review");
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ApiResponse(true, "Notification created successfully", created));
+                    .body(new ApiResponse(true, "Notification created successfully", notifications));
         } catch (Exception e) {
             logger.error("Error creating notification: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

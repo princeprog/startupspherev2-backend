@@ -12,6 +12,6 @@ public interface NotificationsRepository extends JpaRepository<Notifications, In
     long countByIsViewedFalse();
     List<Notifications> findByIsViewedFalse();
     List<Notifications> findByUserIdOrderByIdDesc(Integer userId);
-    List<Notifications> findByUserIdAndIsViewedFalse(Integer userId);
+    List<Notifications> findByUserIdAndIsViewedFalseOrderByIdDesc(Integer userId);
     long countByUserIdAndIsViewedFalse(Integer userId);
 }
