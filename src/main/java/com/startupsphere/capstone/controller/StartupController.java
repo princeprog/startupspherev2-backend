@@ -5,12 +5,14 @@ import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.responses.ErrorResponse;
 import com.startupsphere.capstone.responses.SuccessResponse;
+import com.startupsphere.capstone.service.NotificationService;
 import com.startupsphere.capstone.service.StartupService;
 
 import io.jsonwebtoken.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -39,6 +41,9 @@ public class StartupController {
         this.startupRepository = startupRepository;
     }
 
+    @Autowired
+    private NotificationService notificationService;
+
     @PostMapping
     @Transactional
     public ResponseEntity<Startup> createStartup(@RequestBody Startup startup) {
@@ -56,6 +61,7 @@ public class StartupController {
         try {
             Startup createdStartup = startupService.createStartup(startup);
             logger.info("Startup created successfully with ID: {}", createdStartup.getId());
+            notificationService.createStartupApprovalNotification(createdStartup, "in review");
             return ResponseEntity.ok(createdStartup);
         } catch (Exception e) {
             logger.error("Error creating startup: {}", e.getMessage(), e);

@@ -125,7 +125,7 @@ public class NotificationService {
 
     public List<Notifications> getUserUnviewedNotifications(Integer userId){
         try {
-            return nrepo.findByUserIdAndIsViewedFalse(userId);
+            return nrepo.findByUserIdAndIsViewedFalseOrderByIdDesc(userId);
         } catch (Exception e) {
             logger.error("Error fetching user notifications: {}", e.getMessage());
             throw new RuntimeException("Error retrieving user notifications",e);
