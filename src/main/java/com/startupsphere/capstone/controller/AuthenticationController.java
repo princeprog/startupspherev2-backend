@@ -49,11 +49,10 @@ public ResponseEntity<LoginResponse> authenticate(
     // Use Spring's ResponseCookie for SameSite support
     ResponseCookie cookie = ResponseCookie.from("token", jwt)
             .httpOnly(true)
-            .secure(true) // Set to true if using HTTPS
+            .secure(false) // Set to true if using HTTPS
             .path("/")
             .maxAge(24 * 60 * 60) // 1 day
             .sameSite("None") // For cross-site cookies
-            .domain("localhost") // Or your domain in production
             .build();
 
     response.addHeader("Set-Cookie", cookie.toString());
