@@ -53,6 +53,7 @@ public ResponseEntity<LoginResponse> authenticate(
             .path("/")
             .maxAge(24 * 60 * 60) // 1 day
             .sameSite("None") // For cross-site cookies
+            .domain("localhost")
             .build();
 
     response.addHeader("Set-Cookie", cookie.toString());
