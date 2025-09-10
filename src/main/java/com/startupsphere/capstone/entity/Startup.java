@@ -98,6 +98,33 @@ public class Startup {
     @Column(name = "last_updated", nullable = true)
     private LocalDateTime lastUpdated;
 
+    // Registration & Compliance fields
+    @Column(name = "is_government_registered")
+    private Boolean isGovernmentRegistered;
+
+    @Column(name = "registration_agency")
+    private String registrationAgency;
+
+    @Column(name = "registration_number")
+    private String registrationNumber;
+
+    @Column(name = "registration_date")
+    private String registrationDate;
+
+    @Column(name = "other_registration_agency")
+    private String otherRegistrationAgency;
+
+    @Column(name = "business_license_number")
+    private String businessLicenseNumber;
+
+    @Column(name = "tin")
+    private String tin;
+
+    // Registration certificate as file (image, any extension)
+    @Lob
+    @Column(name = "registration_certificate", columnDefinition = "LONGBLOB")
+    private byte[] registrationCertificate;
+
     public Startup() {
     }
 
@@ -611,5 +638,69 @@ public class Startup {
 
     public void setLastUpdated(LocalDateTime lastUpdated) {
         this.lastUpdated = lastUpdated;
+    }
+
+    public Boolean getIsGovernmentRegistered() {
+        return isGovernmentRegistered;
+    }
+
+    public void setIsGovernmentRegistered(Boolean isGovernmentRegistered) {
+        this.isGovernmentRegistered = isGovernmentRegistered;
+    }
+
+    public String getRegistrationAgency() {
+        return registrationAgency;
+    }
+
+    public void setRegistrationAgency(String registrationAgency) {
+        this.registrationAgency = registrationAgency;
+    }
+
+    public String getRegistrationNumber() {
+        return registrationNumber;
+    }
+
+    public void setRegistrationNumber(String registrationNumber) {
+        this.registrationNumber = registrationNumber;
+    }
+
+    public String getRegistrationDate() {
+        return registrationDate;
+    }
+
+    public void setRegistrationDate(String registrationDate) {
+        this.registrationDate = registrationDate;
+    }
+
+    public String getOtherRegistrationAgency() {
+        return otherRegistrationAgency;
+    }
+
+    public void setOtherRegistrationAgency(String otherRegistrationAgency) {
+        this.otherRegistrationAgency = otherRegistrationAgency;
+    }
+
+    public String getBusinessLicenseNumber() {
+        return businessLicenseNumber;
+    }
+
+    public void setBusinessLicenseNumber(String businessLicenseNumber) {
+        this.businessLicenseNumber = businessLicenseNumber;
+    }
+
+    public String getTin() {
+        return tin;
+    }
+
+    public void setTin(String tin) {
+        this.tin = tin;
+    }
+
+    public byte[] getRegistrationCertificate() {
+        return registrationCertificate;
+    }
+
+    public void setRegistrationCertificate(byte[] registrationCertificate) {
+        this.registrationCertificate = registrationCertificate;
     }
 }

@@ -124,8 +124,20 @@ public class StartupService {
                     startup.setVerificationCode(updatedStartup.getVerificationCode());
                     startup.setEmailVerified(updatedStartup.getEmailVerified());
 
+                    // Registration & Compliance fields
+                    startup.setIsGovernmentRegistered(updatedStartup.getIsGovernmentRegistered());
+                    startup.setRegistrationAgency(updatedStartup.getRegistrationAgency());
+                    startup.setRegistrationNumber(updatedStartup.getRegistrationNumber());
+                    startup.setRegistrationDate(updatedStartup.getRegistrationDate());
+                    startup.setOtherRegistrationAgency(updatedStartup.getOtherRegistrationAgency());
+                    startup.setBusinessLicenseNumber(updatedStartup.getBusinessLicenseNumber());
+                    startup.setTin(updatedStartup.getTin());
+
                     if (updatedStartup.getPhoto() != null) {
                         startup.setPhoto(updatedStartup.getPhoto());
+                    }
+                    if (updatedStartup.getRegistrationCertificate() != null) {
+                        startup.setRegistrationCertificate(updatedStartup.getRegistrationCertificate());
                     }
 
                     return startupRepository.save(startup);

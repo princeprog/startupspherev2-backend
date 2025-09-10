@@ -368,6 +368,64 @@ public class StartupController {
         }
     }
 
+    @PutMapping("/{id:[0-9]+}/upload-registration-certificate")
+    public ResponseEntity<?> uploadRegistrationCertificate(
+            @PathVariable Long id,
+            @RequestParam("registrationCertificate") MultipartFile registrationCertificate) {
+        logger.info("Received registration certificate upload request for startup ID: {}", id);
+
+        if (registrationCertificate == null || registrationCertificate.isEmpty()) {
+            logger.warn("Upload attempt with empty or null registration certificate for startup ID: {}", id);
+            return ResponseEntity.badRequest().body(
+                    new ErrorResponse("Please upload a valid file for registration certificate."));
+        }
+
+        try {
+            Optional<Startup> optionalStartup = startupService.getStartupById(id);
+            if (optionalStartup.isEmpty()) {
+                logger.warn("Startup not found for ID: {}", id);
+                return ResponseEntity.badRequest().body(
+                        new ErrorResponse("Startup with ID " + id + " not found."));
+            }
+
+            Startup startup = optionalStartup.get();
+            logger.info("Found startup: {}", startup.getCompanyName());
+
+            byte[] fileBytes = registrationCertificate.getBytes();
+            logger.info("Successfully read registration certificate bytes, size: {}", fileBytes.length);
+
+            startup.setRegistrationCertificate(fileBytes);
+            Startup updatedStartup = startupService.updateStartup(id, startup);
+            logger.info("Successfully updated startup with registration certificate");
+
+            return ResponseEntity.ok(
+                    new SuccessResponse("Registration certificate uploaded successfully."));
+        } catch (java.io.IOException e) {
+            logger.error("Failed to read registration certificate bytes for startup ID: {}", id, e);
+            return ResponseEntity.status(500).body(
+                    new ErrorResponse("Error processing registration certificate file: " + e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error uploading registration certificate for startup ID: {}", id, e);
+            return ResponseEntity.status(500).body(
+                    new ErrorResponse("Error uploading registration certificate: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id:[0-9]+}/registration-certificate")
+    public ResponseEntity<byte[]> getRegistrationCertificate(@PathVariable Long id) {
+        Optional<Startup> optionalStartup = startupService.getStartupById(id);
+        if (optionalStartup.isEmpty() || optionalStartup.get().getRegistrationCertificate() == null) {
+            logger.warn("Registration certificate not found for startup ID: {}", id);
+            return ResponseEntity.notFound().build();
+        }
+
+        byte[] file = optionalStartup.get().getRegistrationCertificate();
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/octet-stream")
+                .header("Content-Disposition", "attachment; filename=registration_certificate")
+                .body(file);
+    }
+
     public static class VerificationRequest {
         private Long startupId;
         private String email;
