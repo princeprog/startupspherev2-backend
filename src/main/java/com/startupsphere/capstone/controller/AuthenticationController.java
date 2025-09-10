@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.Cookie;
 
 import com.startupsphere.capstone.dtos.LoginUserDto;
 import com.startupsphere.capstone.dtos.RegisterUserDto;
@@ -37,29 +38,32 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(
-            @RequestBody LoginUserDto loginUserDto,
-            HttpServletResponse response) {
-        User authenticatedUser = authenticationService.authenticate(loginUserDto);
+public ResponseEntity<LoginResponse> authenticate(
+        @RequestBody LoginUserDto loginUserDto,
+        HttpServletResponse response) {
+    User authenticatedUser = authenticationService.authenticate(loginUserDto);
 
-        String jwtToken = jwtService.generateToken(authenticatedUser);
+    // Generate JWT using the authenticated user
+    String jwt = jwtService.generateToken(authenticatedUser);
 
-        // Create an HTTP-only cookie
-        ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
-                .httpOnly(true)
-                .secure(true) // Set to true if using HTTPS
-                .path("/")
-                .build(); // No expiration since the token has no expiry
+    // Use Spring's ResponseCookie for SameSite support
+    ResponseCookie cookie = ResponseCookie.from("token", jwt)
+            .httpOnly(true)
+            .secure(true) // Set to true if using HTTPS
+            .path("/")
+            .maxAge(24 * 60 * 60) // 1 day
+            .sameSite("None") // For cross-site cookies
+            .domain("localhost") // Or your domain in production
+            .build();
 
-        // Add the cookie to the response
-        response.addHeader("Set-Cookie", cookie.toString());
+    response.addHeader("Set-Cookie", cookie.toString());
 
-        // Return the response body (optional)
-        LoginResponse loginResponse = new LoginResponse()
-                .setToken(jwtToken); // No expiration time to set
+    // Return the response body (optional)
+    LoginResponse loginResponse = new LoginResponse()
+            .setToken(jwt); // Use the same JWT
 
-        return ResponseEntity.ok(loginResponse);
-    }
+    return ResponseEntity.ok(loginResponse);
+}
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
@@ -80,7 +84,8 @@ public class AuthenticationController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         boolean isAuthenticated = authentication != null && authentication.isAuthenticated()
-                && !(authentication.getPrincipal() instanceof String && authentication.getPrincipal().equals("anonymousUser"));
+                && !(authentication.getPrincipal() instanceof String
+                        && authentication.getPrincipal().equals("anonymousUser"));
 
         return ResponseEntity.ok(isAuthenticated);
     }
