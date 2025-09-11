@@ -50,6 +50,8 @@ public class AuthenticationController {
                 .httpOnly(true)
                 .secure(true) // Set to true if using HTTPS
                 .path("/")
+                .sameSite("None")
+                .maxAge(3600)
                 .build(); // No expiration since the token has no expiry
 
         // Add the cookie to the response
@@ -68,8 +70,10 @@ public class AuthenticationController {
                 .httpOnly(true)
                 .secure(true) // Set to true if using HTTPS
                 .path("/")
+                .sameSite("None")
                 .maxAge(0) // Expire the cookie immediately
                 .build();
+                
 
         response.addHeader("Set-Cookie", cookie.toString());
 
