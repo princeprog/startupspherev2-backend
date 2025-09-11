@@ -38,32 +38,29 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-public ResponseEntity<LoginResponse> authenticate(
-        @RequestBody LoginUserDto loginUserDto,
-        HttpServletResponse response) {
-    User authenticatedUser = authenticationService.authenticate(loginUserDto);
+    public ResponseEntity<LoginResponse> authenticate(
+            @RequestBody LoginUserDto loginUserDto,
+            HttpServletResponse response) {
+        User authenticatedUser = authenticationService.authenticate(loginUserDto);
 
-    // Generate JWT using the authenticated user
-    String jwt = jwtService.generateToken(authenticatedUser);
+        String jwtToken = jwtService.generateToken(authenticatedUser);
 
-    // Use Spring's ResponseCookie for SameSite support
-    ResponseCookie cookie = ResponseCookie.from("token", jwt)
-            .httpOnly(true)
-            .secure(false) // Set to true if using HTTPS
-            .path("/")
-            .maxAge(24 * 60 * 60) // 1 day
-            .sameSite("None") // For cross-site cookies
-            .domain("localhost")
-            .build();
+        // Create an HTTP-only cookie
+        ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
+                .httpOnly(true)
+                .secure(true) // Set to true if using HTTPS
+                .path("/")
+                .build(); // No expiration since the token has no expiry
 
-    response.addHeader("Set-Cookie", cookie.toString());
+        // Add the cookie to the response
+        response.addHeader("Set-Cookie", cookie.toString());
 
-    // Return the response body (optional)
-    LoginResponse loginResponse = new LoginResponse()
-            .setToken(jwt); // Use the same JWT
+        // Return the response body (optional)
+        LoginResponse loginResponse = new LoginResponse()
+                .setToken(jwtToken); // No expiration time to set
 
-    return ResponseEntity.ok(loginResponse);
-}
+        return ResponseEntity.ok(loginResponse);
+    }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
