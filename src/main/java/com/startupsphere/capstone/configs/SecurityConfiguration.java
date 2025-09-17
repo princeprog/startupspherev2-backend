@@ -52,9 +52,11 @@ public class SecurityConfiguration {
         configuration.setAllowedOrigins(Arrays.asList(
             "https://startupsphere-azure.vercel.app", // Replace with your actual Vercel domain
             "http://localhost:3000",
-            "http://localhost:5173"
+            "http://localhost:5173",
+                "https://startupsphere-git-test-alprinces-projects.vercel.app/"
+
         ));
-        
+
         // Or if you want to allow all Vercel subdomains temporarily for testing:
         // configuration.addAllowedOriginPattern("https://*.vercel.app");
         // configuration.addAllowedOriginPattern("http://localhost:*");
