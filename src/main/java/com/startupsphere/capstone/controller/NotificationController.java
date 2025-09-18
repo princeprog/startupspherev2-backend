@@ -157,6 +157,8 @@ public class NotificationController {
         }
     }
 
+
+
     @GetMapping("/my")
     public ResponseEntity<ApiResponse> getUserNotifications() {
         try {
@@ -169,6 +171,50 @@ public class NotificationController {
             logger.error("Error fetching user notifications: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "Error fetching user notifications", null));
+        }
+    }
+
+    @GetMapping("/my/{id}")
+    public ResponseEntity<ApiResponse> getUserNotificationById(@PathVariable int id) {
+        try {
+            Integer currentUserId = SecurityUtils.getCurrentUserId();
+            logger.info("Fetching notification id: {} for user: {}", id, currentUserId);
+
+            // Get the notification from the repository
+            Notifications notification = notificationService.getNotificationById(id);
+
+            // Check if the notification belongs to the current user
+            if (notification.getUser() != null && notification.getUser().getId().equals(currentUserId)) {
+                return ResponseEntity.ok()
+                        .body(new ApiResponse(true, "Notification fetched successfully", notification));
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ApiResponse(false, "Access denied", null));
+            }
+        } catch (IllegalArgumentException e) {
+            logger.warn("Notification not found with id: {}", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(false, "Notification not found", null));
+        } catch (Exception e) {
+            logger.error("Error fetching notification: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error fetching notification", null));
+        }
+    }
+
+    @PutMapping("/my/markAllRead")
+    public ResponseEntity<ApiResponse> markAllNotificationsAsRead() {
+        try {
+            Integer currentUserId = SecurityUtils.getCurrentUserId();
+            logger.info("Marking all notifications as read for user: {}", currentUserId);
+
+            List<Notifications> updatedNotifications = notificationService.markAllAsViewed(currentUserId);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse(true, "All notifications marked as read", updatedNotifications));
+        } catch (Exception e) {
+            logger.error("Error marking all notifications as read: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Error marking all notifications as read", null));
         }
     }
 

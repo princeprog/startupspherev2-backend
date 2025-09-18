@@ -123,6 +123,24 @@ public class NotificationService {
         }
     }
 
+    public List<Notifications> markAllAsViewed(Integer userId) {
+        try {
+            List<Notifications> unviewedNotifications = nrepo.findByUserIdAndIsViewedFalseOrderByIdDesc(userId);
+            for (Notifications notification : unviewedNotifications) {
+                notification.setViewed(true);
+            }
+            return nrepo.saveAll(unviewedNotifications);
+        } catch (Exception e) {
+            logger.error("Error marking all notifications as viewed: {}", e.getMessage());
+            throw new RuntimeException("Error marking all notifications as viewed", e);
+        }
+    }
+
+    public Notifications getNotificationById(int id) {
+        return nrepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found with id: " + id));
+    }
+
     public List<Notifications> getUserUnviewedNotifications(Integer userId){
         try {
             return nrepo.findByUserIdAndIsViewedFalseOrderByIdDesc(userId);

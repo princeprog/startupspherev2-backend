@@ -1,14 +1,10 @@
 package com.startupsphere.capstone.entity;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 public class Notifications {
@@ -28,6 +24,10 @@ public class Notifications {
 
     private boolean isViewed = false;
     private LocalDateTime viewedAt;
+
+    @CreationTimestamp
+    @Column(updatable = false, name = "created_at")
+    private Date createdAt;
 
     public Notifications(){}
 
