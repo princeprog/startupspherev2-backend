@@ -51,8 +51,8 @@ public class SecurityConfiguration {
         // Allow your Vercel domain and local development
         configuration.setAllowedOrigins(Arrays.asList(
             "https://startupsphere-azure.vercel.app", // Replace with your actual Vercel domain
-            "http://localhost:3000",
-            "http://localhost:5173",
+            "https://localhost:3000",
+            "https://localhost:5173",
                 "https://startupsphere-git-test-alprinces-projects.vercel.app/"
 
         ));
