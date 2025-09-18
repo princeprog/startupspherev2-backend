@@ -88,6 +88,18 @@ public class StartupController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/submitted")
+    public ResponseEntity<List<Startup>> getAllSubmittedStartups() {
+        try {
+            logger.info("Fetching all submitted startups");
+            List<Startup> startups = startupService.getAllSubmittedStartups();
+            return ResponseEntity.ok(startups);
+        } catch (Exception e) {
+            logger.error("Error fetching submitted startups: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     @PutMapping("/{id:[0-9]+}")
     public ResponseEntity<Startup> updateStartup(@PathVariable Long id, @RequestBody Startup updatedStartup) {
         try {

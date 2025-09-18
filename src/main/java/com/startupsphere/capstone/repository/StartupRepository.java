@@ -18,6 +18,8 @@ public interface StartupRepository extends JpaRepository<Startup, Long> {
 
     boolean existsByContactEmailAndEmailVerifiedTrue(String contactEmail);
 
+    List<Startup> findByStatus(String status);
+
     @Query("SELECT s FROM Startup s WHERE s.emailVerified = true")
     List<Startup> findAllVerifiedEmailStartups();
 

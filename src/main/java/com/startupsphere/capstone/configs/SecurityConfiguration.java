@@ -53,6 +53,7 @@ public class SecurityConfiguration {
             "https://startupsphere-azure.vercel.app", // Replace with your actual Vercel domain
             "https://localhost:3000",
             "https://localhost:5173",
+                "https://localhost:5174",
                 "https://startupsphere-git-test-alprinces-projects.vercel.app/"
 
         ));

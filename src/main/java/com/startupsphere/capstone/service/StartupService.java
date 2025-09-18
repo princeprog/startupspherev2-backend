@@ -243,6 +243,11 @@ public class StartupService {
                 .toList();
     }
 
+    public List<Startup> getAllSubmittedStartups() {
+        logger.info("Fetching all submitted startups");
+        return startupRepository.findByStatus("In Review");
+    }
+
     public List<Startup> getStartupsByLoggedInUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()
                 || authentication.getPrincipal().equals("anonymousUser")) {
