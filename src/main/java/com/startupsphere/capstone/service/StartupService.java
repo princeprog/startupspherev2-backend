@@ -1,5 +1,12 @@
 package com.startupsphere.capstone.service;
 
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.SendGrid;
+import com.sendgrid.Response;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import com.startupsphere.capstone.entity.Bookmarks;
 import com.startupsphere.capstone.entity.Like;
 import com.startupsphere.capstone.entity.Startup;
@@ -10,14 +17,14 @@ import com.startupsphere.capstone.repository.LikeRepository;
 import com.startupsphere.capstone.repository.StartupRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.startupsphere.capstone.repository.ViewsRepository;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,24 +34,31 @@ import java.util.Random;
 public class StartupService {
 
     private static final Logger logger = LoggerFactory.getLogger(StartupService.class);
+    
+    @Value("${sendgrid.api.key}")
+    private String sendgridApiKey;
+
+    @Value("${sendgrid.from.email:default@startupsphere.com}")
+    private String fromEmail;
+
+    @Value("${sendgrid.from.name:StartupSphere}")
+    private String fromName;
 
     private final StartupRepository startupRepository;
     private final ViewsRepository viewsRepository;
     private final LikeRepository likeRepository;
     private final BookmarksRepository bookmarksRepository;
-    private final JavaMailSender mailSender;
+    // Removed JavaMailSender dependency
 
     public StartupService(
             StartupRepository startupRepository,
             ViewsRepository viewsRepository,
             LikeRepository likeRepository,
-            BookmarksRepository bookmarksRepository,
-            JavaMailSender mailSender) {
+            BookmarksRepository bookmarksRepository) {
         this.startupRepository = startupRepository;
         this.viewsRepository = viewsRepository;
         this.likeRepository = likeRepository;
         this.bookmarksRepository = bookmarksRepository;
-        this.mailSender = mailSender;
     }
 
     @Transactional
@@ -271,16 +285,38 @@ public class StartupService {
         startup.setEmailVerified(false);
         startupRepository.save(startup);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Verify Your Email");
-        message.setText("Your verification code is: " + verificationCode);
+        // Use SendGrid configuration
+        Email from = new Email(fromEmail, fromName);
+        Email to = new Email(email);
+        Content content = new Content("text/plain", 
+            "Hello,\n\nYour verification code for StartupSphere is: " + verificationCode + 
+            "\n\nPlease enter this code to verify your email address.\n\n" +
+            "If you didn't request this, please ignore this email.\n\n" +
+            "Best regards,\nStartupSphere Team");
+        
+        Mail mail = new Mail(from, "Verify Your Email - StartupSphere", to, content);
+
+        SendGrid sg = new SendGrid(sendgridApiKey);
+        Request request = new Request();
         try {
-            mailSender.send(message);
-            logger.info("Verification email sent to {}", email);
-        } catch (Exception e) {
-            logger.error("Failed to send verification email to {}: {}", email, e.getMessage(), e);
-            throw new RuntimeException("Failed to send email: " + e.getMessage());
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
+            
+            logger.info("SendGrid response status: {}", response.getStatusCode());
+            logger.debug("SendGrid response body: {}", response.getBody());
+            
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                logger.info("Verification email sent successfully to {}", email);
+            } else {
+                logger.error("Failed to send verification email to {}: Status {} - {}", 
+                    email, response.getStatusCode(), response.getBody());
+                throw new RuntimeException("Failed to send email: HTTP " + response.getStatusCode() + " - " + response.getBody());
+            }
+        } catch (IOException e) {
+            logger.error("IOException while sending verification email to {}: {}", email, e.getMessage(), e);
+            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
         }
     }
 
@@ -337,22 +373,44 @@ public class StartupService {
 
         for (Startup startup : startups) {
             try {
-                SimpleMailMessage message = new SimpleMailMessage();
-                message.setTo(startup.getContactEmail());
-                message.setSubject("Reminder: Update Your Startup Information");
-                message.setText(
-                        "Dear " + startup.getCompanyName() + ",\n\n" +
-                                "It has been over 6 months since your startup information was last updated. " +
-                                "To ensure your data remains relevant and verified, please update your details.\n\n" +
-                                "You can update your information by logging into your account and visiting the startup dashboard.\n"
-                                +
-                                "Link: [Add Frontend URL Link]" +
-                                "Thank you,\nStartupSphere Team");
-                mailSender.send(message);
+                sendReminderEmail(startup.getContactEmail(), startup.getCompanyName());
                 logger.info("Reminder email sent to {} for startup ID: {}", startup.getContactEmail(), startup.getId());
             } catch (Exception e) {
                 logger.error("Failed to send reminder email to {}: {}", startup.getContactEmail(), e.getMessage(), e);
             }
+        }
+    }
+
+    private void sendReminderEmail(String toEmail, String companyName) {
+        Email from = new Email(fromEmail, fromName);
+        Email to = new Email(toEmail);
+        Content content = new Content("text/plain", 
+            "Dear " + companyName + ",\n\n" +
+            "It has been over 6 months since your startup information was last updated. " +
+            "To ensure your data remains relevant and verified, please update your details.\n\n" +
+            "You can update your information by logging into your account and visiting the startup dashboard.\n\n" +
+            "Thank you,\nStartupSphere Team");
+        
+        Mail mail = new Mail(from, "Reminder: Update Your Startup Information", to, content);
+
+        SendGrid sg = new SendGrid(sendgridApiKey);
+        Request request = new Request();
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
+            
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                logger.info("Reminder email sent successfully to {}", toEmail);
+            } else {
+                logger.error("Failed to send reminder email to {}: Status {} - {}", 
+                    toEmail, response.getStatusCode(), response.getBody());
+                throw new RuntimeException("Failed to send reminder email: HTTP " + response.getStatusCode() + " - " + response.getBody());
+            }
+        } catch (IOException e) {
+            logger.error("IOException while sending reminder email to {}: {}", toEmail, e.getMessage(), e);
+            throw new RuntimeException("Failed to send reminder email: " + e.getMessage(), e);
         }
     }
 }

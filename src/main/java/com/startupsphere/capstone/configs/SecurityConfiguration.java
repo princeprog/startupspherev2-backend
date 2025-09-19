@@ -56,6 +56,7 @@ public class SecurityConfiguration {
                 "https://localhost:5174",
                 "https://startupsphere-git-test-alprinces-projects.vercel.app/"
 
+
         ));
 
         // Or if you want to allow all Vercel subdomains temporarily for testing:
