@@ -32,6 +32,10 @@ public class Startup {
 
     @JsonIgnore
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StartupStakeholder> startupStakeholders = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notifications> notifications;
 
     @Column(name = "views_count", nullable = false)

@@ -72,6 +72,11 @@ public class User implements UserDetails {
         this.email = email;
         this.password = password;
         this.role = role;
+        this.likes = new ArrayList<>();
+        this.startups = new ArrayList<>();
+        this.bookmarks = new ArrayList<>();
+        this.views = new ArrayList<>();
+        this.notifications = new ArrayList<>();
     }
 
     @Override
@@ -117,6 +122,31 @@ public class User implements UserDetails {
     public User setId(Integer id) {
         this.id = id;
         return this;
+    }
+
+    public void addLike(Like like) {
+        likes.add(like);
+        like.setUser(this);
+    }
+
+    public void addStartup(Startup startup) {
+        startups.add(startup);
+        startup.setUser(this);
+    }
+
+    public void addBookmark(Bookmarks bookmark) {
+        bookmarks.add(bookmark);
+        bookmark.setUser(this);
+    }
+
+    public void addView(Views view) {
+        views.add(view);
+        view.setUser(this);
+    }
+
+    public void addNotification(Notifications notification) {
+        notifications.add(notification);
+        notification.setUser(this);
     }
 
         public String getFirstname() {

@@ -1,0 +1,69 @@
+package com.startupsphere.capstone.controller;
+
+import com.startupsphere.capstone.dtos.StartupStakeholderRequest;
+import com.startupsphere.capstone.entity.Stakeholder;
+import com.startupsphere.capstone.entity.StartupStakeholder;
+import com.startupsphere.capstone.repository.StartupStakeholderRepository;
+import com.startupsphere.capstone.service.StartupStakeholderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/startup-stakeholders")
+public class StartupStakeholderController {
+
+    private final StartupStakeholderService service;
+
+    @Autowired
+    StartupStakeholderRepository repository;
+
+    @Autowired
+    public StartupStakeholderController(StartupStakeholderService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public List<StartupStakeholder> getAll() {
+        return service.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<StartupStakeholder> getById(@PathVariable Long id) {
+        return service.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/startup/{startupId}/stakeholders")
+    public List<com.startupsphere.capstone.dto.StakeholderInfoDTO> getByStartupId(@PathVariable Long startupId) {
+        return service.findStakeholderByStartupId(startupId);
+    }
+
+    @PostMapping
+    public StartupStakeholder create(@RequestBody StartupStakeholderRequest request) {
+        return service.save(request);
+    }
+
+//    @PutMapping("/{id}")
+//    public ResponseEntity<StartupStakeholder> update(@PathVariable Long id,
+//                                                     @RequestBody StartupStakeholder startupStakeholder) {
+//        return service.findById(id)
+//                .map(existing -> {
+//                    startupStakeholder.setId(existing.getId());
+//                    return ResponseEntity.ok(service.save(startupStakeholder));
+//                })
+//                .orElse(ResponseEntity.notFound().build());
+//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        return service.findById(id)
+                .map(stakeholder -> {
+                    service.deleteById(id);
+                    return ResponseEntity.noContent().<Void>build();
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+}
