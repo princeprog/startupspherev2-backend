@@ -1,4 +1,4 @@
-package com.startupsphere.capstone.dto;
+package com.startupsphere.capstone.dtos;
 
 import com.startupsphere.capstone.entity.Stakeholder;
 

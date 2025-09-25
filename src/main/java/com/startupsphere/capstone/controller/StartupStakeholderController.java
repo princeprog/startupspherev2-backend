@@ -38,7 +38,7 @@ public class StartupStakeholderController {
     }
 
     @GetMapping("/startup/{startupId}/stakeholders")
-    public List<com.startupsphere.capstone.dto.StakeholderInfoDTO> getByStartupId(@PathVariable Long startupId) {
+    public List<com.startupsphere.capstone.dtos.StakeholderInfoDTO> getByStartupId(@PathVariable Long startupId) {
         return service.findStakeholderByStartupId(startupId);
     }
 

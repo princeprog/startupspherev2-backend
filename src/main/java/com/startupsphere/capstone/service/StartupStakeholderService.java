@@ -58,7 +58,7 @@ public class StartupStakeholderService {
         return repository.findByStartupId(startupId);
     }
 
-    public List<com.startupsphere.capstone.dto.StakeholderInfoDTO> findStakeholderByStartupId(Long startupId){
+    public List<com.startupsphere.capstone.dtos.StakeholderInfoDTO> findStakeholderByStartupId(Long startupId){
         return repository.findStakeholderInfoByStartupId(startupId);
     }
 }
