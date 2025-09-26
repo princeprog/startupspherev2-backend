@@ -37,13 +37,8 @@ public class StakeholderController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Stakeholder> update(@PathVariable Long id, @RequestBody Stakeholder stakeholder) {
-        return service.findById(id)
-                .map(existing -> {
-                    stakeholder.setId(existing.getId());
-                    return ResponseEntity.ok(service.save(stakeholder));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Stakeholder> updateStakeholder(@PathVariable Long id, @RequestBody Stakeholder stakeholder) {
+        return service.updateStakeholder(id, stakeholder);
     }
 
     @DeleteMapping("/{id}")

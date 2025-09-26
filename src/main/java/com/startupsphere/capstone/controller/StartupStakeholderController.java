@@ -2,11 +2,15 @@ package com.startupsphere.capstone.controller;
 
 import com.startupsphere.capstone.dtos.StartupStakeholderRequest;
 import com.startupsphere.capstone.entity.Stakeholder;
+import com.startupsphere.capstone.entity.Startup;
 import com.startupsphere.capstone.entity.StartupStakeholder;
+import com.startupsphere.capstone.repository.StakeholderRepository;
+import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.repository.StartupStakeholderRepository;
 import com.startupsphere.capstone.service.StartupStakeholderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,16 +51,12 @@ public class StartupStakeholderController {
         return service.save(request);
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<StartupStakeholder> update(@PathVariable Long id,
-//                                                     @RequestBody StartupStakeholder startupStakeholder) {
-//        return service.findById(id)
-//                .map(existing -> {
-//                    startupStakeholder.setId(existing.getId());
-//                    return ResponseEntity.ok(service.save(startupStakeholder));
-//                })
-//                .orElse(ResponseEntity.notFound().build());
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<StartupStakeholder> update(@PathVariable Long id, @RequestBody StartupStakeholderRequest request) {
+        return service.updateStartupStakeholder(id, request);
+    }
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return service.findById(id)

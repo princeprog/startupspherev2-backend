@@ -30,6 +30,13 @@ public class Stakeholder {
     private String facebook;
     private String linkedIn;
 
+
+    private Double locationLat;
+
+    private Double locationLng;
+
+    private String locationName;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -46,6 +53,30 @@ public class Stakeholder {
         this.lastUpdated = LocalDateTime.now();
     }
 
+    public Stakeholder(Long id, String name, String locationName, String email, List<StartupStakeholder> startupStakeholders, String phoneNumber, String region, String city, String barangay, String street, String postalCode, String facebook, String linkedIn, Double locationLat, Double locationLng, LocalDateTime createdAt, LocalDateTime lastUpdated) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.startupStakeholders = startupStakeholders;
+        this.phoneNumber = phoneNumber;
+        this.region = region;
+        this.city = city;
+        this.barangay = barangay;
+        this.street = street;
+        this.postalCode = postalCode;
+        this.facebook = facebook;
+        this.linkedIn = linkedIn;
+        this.locationLat = locationLat;
+        this.locationLng = locationLng;
+        this.createdAt = createdAt;
+        this.lastUpdated = lastUpdated;
+        this.locationName = locationName;
+
+    }
+
+    public Stakeholder() {
+    }
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -53,6 +84,14 @@ public class Stakeholder {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
     }
 
     public String getName() {
@@ -73,6 +112,10 @@ public class Stakeholder {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
     public String getRegion() {
@@ -135,12 +178,32 @@ public class Stakeholder {
         return createdAt;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public LocalDateTime getLastUpdated() {
         return lastUpdated;
     }
 
     public void setLastUpdated(LocalDateTime lastUpdated) {
         this.lastUpdated = lastUpdated;
+    }
+
+    public Double getLocationLat() {
+        return locationLat;
+    }
+
+    public void setLocationLat(Double locationLat) {
+        this.locationLat = locationLat;
+    }
+
+    public Double getLocationLng() {
+        return locationLng;
+    }
+
+    public void setLocationLng(Double locationLng) {
+        this.locationLng = locationLng;
     }
 
 }

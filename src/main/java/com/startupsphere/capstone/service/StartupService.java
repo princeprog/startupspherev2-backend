@@ -288,12 +288,12 @@ public class StartupService {
         // Use SendGrid configuration
         Email from = new Email(fromEmail, fromName);
         Email to = new Email(email);
-        Content content = new Content("text/plain", 
-            "Hello,\n\nYour verification code for StartupSphere is: " + verificationCode + 
+        Content content = new Content("text/plain",
+            "Hello,\n\nYour verification code for StartupSphere is: " + verificationCode +
             "\n\nPlease enter this code to verify your email address.\n\n" +
             "If you didn't request this, please ignore this email.\n\n" +
             "Best regards,\nStartupSphere Team");
-        
+
         Mail mail = new Mail(from, "Verify Your Email - StartupSphere", to, content);
 
         SendGrid sg = new SendGrid(sendgridApiKey);
@@ -303,14 +303,14 @@ public class StartupService {
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
             Response response = sg.api(request);
-            
+
             logger.info("SendGrid response status: {}", response.getStatusCode());
             logger.debug("SendGrid response body: {}", response.getBody());
-            
+
             if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
                 logger.info("Verification email sent successfully to {}", email);
             } else {
-                logger.error("Failed to send verification email to {}: Status {} - {}", 
+                logger.error("Failed to send verification email to {}: Status {} - {}",
                     email, response.getStatusCode(), response.getBody());
                 throw new RuntimeException("Failed to send email: HTTP " + response.getStatusCode() + " - " + response.getBody());
             }
@@ -384,13 +384,13 @@ public class StartupService {
     private void sendReminderEmail(String toEmail, String companyName) {
         Email from = new Email(fromEmail, fromName);
         Email to = new Email(toEmail);
-        Content content = new Content("text/plain", 
+        Content content = new Content("text/plain",
             "Dear " + companyName + ",\n\n" +
             "It has been over 6 months since your startup information was last updated. " +
             "To ensure your data remains relevant and verified, please update your details.\n\n" +
             "You can update your information by logging into your account and visiting the startup dashboard.\n\n" +
             "Thank you,\nStartupSphere Team");
-        
+
         Mail mail = new Mail(from, "Reminder: Update Your Startup Information", to, content);
 
         SendGrid sg = new SendGrid(sendgridApiKey);
@@ -400,11 +400,11 @@ public class StartupService {
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
             Response response = sg.api(request);
-            
+
             if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
                 logger.info("Reminder email sent successfully to {}", toEmail);
             } else {
-                logger.error("Failed to send reminder email to {}: Status {} - {}", 
+                logger.error("Failed to send reminder email to {}: Status {} - {}",
                     toEmail, response.getStatusCode(), response.getBody());
                 throw new RuntimeException("Failed to send reminder email: HTTP " + response.getStatusCode() + " - " + response.getBody());
             }

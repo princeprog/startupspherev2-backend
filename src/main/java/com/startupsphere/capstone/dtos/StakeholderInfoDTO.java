@@ -10,7 +10,18 @@ public class StakeholderInfoDTO {
     private String status;
     private LocalDateTime dateJoined;
 
-    public StakeholderInfoDTO(Stakeholder stakeholder, String role, String status, LocalDateTime dateJoined) {
+    private Long id;
+
+    public StakeholderInfoDTO(Stakeholder stakeholder, Long id, String role, String status, LocalDateTime dateJoined) {
+        this.stakeholder = stakeholder;
+        this.role = role;
+        this.status = status;
+        this.dateJoined = dateJoined;
+        this.id = id;
+    }
+
+    public StakeholderInfoDTO(Long id, Stakeholder stakeholder, String role, String status, LocalDateTime dateJoined) {
+        this.id = id;
         this.stakeholder = stakeholder;
         this.role = role;
         this.status = status;
@@ -19,6 +30,14 @@ public class StakeholderInfoDTO {
 
     public Stakeholder getStakeholder() {
         return stakeholder;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setStakeholder(Stakeholder stakeholder) {

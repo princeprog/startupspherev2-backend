@@ -8,7 +8,9 @@ import com.startupsphere.capstone.repository.StakeholderRepository;
 import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.repository.StartupStakeholderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,6 +50,33 @@ public class StartupStakeholderService {
         startupStakeholder.setRole(request.getRole());
         startupStakeholder.setStatus(request.getStatus());
         return repository.save(startupStakeholder);
+    }
+
+    @Transactional
+    public ResponseEntity<StartupStakeholder> updateStartupStakeholder(Long id, StartupStakeholderRequest request) {
+        return repository.findById(id)
+                .map(existing -> {
+                    // Update stakeholder if changed
+                    if (request.getStakeholderId() != null && !request.getStakeholderId().equals(existing.getStakeholder().getId())) {
+                        Stakeholder stakeholder = strepo.findById(request.getStakeholderId())
+                                .orElseThrow(() -> new IllegalArgumentException("Stakeholder not found"));
+                        existing.setStakeholder(stakeholder);
+                    }
+
+                    // Update startup if changed
+                    if (request.getStartupId() != null && !request.getStartupId().equals(existing.getStartup().getId())) {
+                        Startup startup = srepo.findById(request.getStartupId())
+                                .orElseThrow(() -> new IllegalArgumentException("Startup not found"));
+                        existing.setStartup(startup);
+                    }
+
+                    // Update other fields
+                    existing.setRole(request.getRole());
+                    existing.setStatus(request.getStatus());
+
+                    return ResponseEntity.ok(repository.save(existing));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     public void deleteById(Long id) {
