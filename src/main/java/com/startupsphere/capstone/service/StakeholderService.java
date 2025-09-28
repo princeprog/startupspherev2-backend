@@ -57,6 +57,13 @@ public class StakeholderService {
                     existingStakeholder.setLocationLat(updatedStakeholder.getLocationLat());
                     existingStakeholder.setLocationLng(updatedStakeholder.getLocationLng());
                     existingStakeholder.setLocationName(updatedStakeholder.getLocationName());
+                    existingStakeholder.setBarangayCode(updatedStakeholder.getBarangayCode());
+                    existingStakeholder.setCityCode(updatedStakeholder.getCityCode());
+                    existingStakeholder.setRegionCode(updatedStakeholder.getRegionCode());
+                    existingStakeholder.setRegionCode(updatedStakeholder.getRegionCode());
+                    existingStakeholder.setProvince(updatedStakeholder.getProvince());
+                    existingStakeholder.setProvinceCode(updatedStakeholder.getProvinceCode());
+
 
                     Stakeholder saved = repository.save(existingStakeholder);
                     return ResponseEntity.ok(saved);
