@@ -23,8 +23,15 @@ public class Stakeholder {
 
     private String phoneNumber;
     private String region;
+    private String regionCode;
+
+    private String provinceCode;
+    private String province;
     private String city;
+    private String cityCode;
     private String barangay;
+
+    private String barangayCode;
     private String street;
     private String postalCode;
     private String facebook;
@@ -53,7 +60,7 @@ public class Stakeholder {
         this.lastUpdated = LocalDateTime.now();
     }
 
-    public Stakeholder(Long id, String name, String locationName, String email, List<StartupStakeholder> startupStakeholders, String phoneNumber, String region, String city, String barangay, String street, String postalCode, String facebook, String linkedIn, Double locationLat, Double locationLng, LocalDateTime createdAt, LocalDateTime lastUpdated) {
+    public Stakeholder(Long id, String name, String locationName,String barangayCode, String regionCode, String provinceCode,String province, String cityCode, String email, List<StartupStakeholder> startupStakeholders, String phoneNumber, String region, String city, String barangay, String street, String postalCode, String facebook, String linkedIn, Double locationLat, Double locationLng, LocalDateTime createdAt, LocalDateTime lastUpdated) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -71,10 +78,58 @@ public class Stakeholder {
         this.createdAt = createdAt;
         this.lastUpdated = lastUpdated;
         this.locationName = locationName;
+        this.barangayCode = barangayCode;
+        this.regionCode = regionCode;
+        this.provinceCode = provinceCode;
+        this.cityCode = cityCode;
+        this.province = province;
+
 
     }
 
     public Stakeholder() {
+    }
+
+
+
+    public String getRegionCode() {
+        return regionCode;
+    }
+
+    public void setRegionCode(String regionCode) {
+        this.regionCode = regionCode;
+    }
+
+    public String getProvinceCode() {
+        return provinceCode;
+    }
+
+    public void setProvinceCode(String provinceCode) {
+        this.provinceCode = provinceCode;
+    }
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getCityCode() {
+        return cityCode;
+    }
+
+    public void setCityCode(String cityCode) {
+        this.cityCode = cityCode;
+    }
+
+    public String getBarangayCode() {
+        return barangayCode;
+    }
+
+    public void setBarangayCode(String barangayCode) {
+        this.barangayCode = barangayCode;
     }
 
     // Getters and Setters
