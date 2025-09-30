@@ -1,5 +1,6 @@
 package com.startupsphere.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -7,6 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "startup_stakeholders")
+@JsonIgnoreProperties({"startupStakeholders"})
 public class StartupStakeholder {
 
     @Id
@@ -31,15 +33,18 @@ public class StartupStakeholder {
     @Column(nullable = false)
     private String status;
 
+    private boolean isConnected;
+
     public StartupStakeholder() {
     }
 
-    public StartupStakeholder(Startup startup, Stakeholder stakeholder, String role, LocalDateTime dateJoined, String status) {
+    public StartupStakeholder(Startup startup, Stakeholder stakeholder, String role, LocalDateTime dateJoined, String status, boolean isConnected) {
         this.startup = startup;
         this.stakeholder = stakeholder;
         this.role = role;
         this.dateJoined = dateJoined;
         this.status = status;
+        this.isConnected = isConnected;
     }
 
     // Getters and Setters
@@ -49,6 +54,14 @@ public class StartupStakeholder {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(boolean connected) {
+        isConnected = connected;
     }
 
     public Startup getStartup() {

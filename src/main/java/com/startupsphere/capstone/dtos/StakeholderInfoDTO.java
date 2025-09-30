@@ -10,6 +10,8 @@ public class StakeholderInfoDTO {
     private String status;
     private LocalDateTime dateJoined;
 
+    private boolean isConnected;
+
     private Long id;
 
     public StakeholderInfoDTO(Stakeholder stakeholder, Long id, String role, String status, LocalDateTime dateJoined) {
@@ -18,14 +20,16 @@ public class StakeholderInfoDTO {
         this.status = status;
         this.dateJoined = dateJoined;
         this.id = id;
+
     }
 
-    public StakeholderInfoDTO(Long id, Stakeholder stakeholder, String role, String status, LocalDateTime dateJoined) {
+    public StakeholderInfoDTO(Long id, Stakeholder stakeholder, String role, String status, LocalDateTime dateJoined,boolean isConnected) {
         this.id = id;
         this.stakeholder = stakeholder;
         this.role = role;
         this.status = status;
         this.dateJoined = dateJoined;
+        this.isConnected = isConnected;
     }
 
     public Stakeholder getStakeholder() {
@@ -34,6 +38,14 @@ public class StakeholderInfoDTO {
 
     public Long getId() {
         return id;
+    }
+
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(boolean isConnected) {
+        this.isConnected = isConnected;
     }
 
     public void setId(Long id) {

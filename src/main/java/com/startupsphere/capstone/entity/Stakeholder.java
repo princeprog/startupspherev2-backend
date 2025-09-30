@@ -1,11 +1,13 @@
 package com.startupsphere.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "stakeholders")
+@JsonIgnoreProperties({"startupStakeholders"})
 public class Stakeholder {
 
     @Id
@@ -259,6 +261,14 @@ public class Stakeholder {
 
     public void setLocationLng(Double locationLng) {
         this.locationLng = locationLng;
+    }
+
+    public List<StartupStakeholder> getStartupStakeholders() {
+        return startupStakeholders;
+    }
+
+    public void setStartupStakeholders(List<StartupStakeholder> startupStakeholders) {
+        this.startupStakeholders = startupStakeholders;
     }
 
 }
