@@ -7,11 +7,14 @@ public class StartupStakeholderRequest {
     private String status;
     private Long startupId;
 
-    public StartupStakeholderRequest(Long stakeholderId, String role, String status, Long startupId) {
+    private boolean isConnected;
+
+    public StartupStakeholderRequest(Long stakeholderId, String role, String status, Long startupId, boolean isConnected) {
         this.stakeholderId = stakeholderId;
         this.role = role;
         this.status = status;
         this.startupId = startupId;
+        this.isConnected = isConnected;
     }
 
     public Long getStakeholderId() {
@@ -20,6 +23,14 @@ public class StartupStakeholderRequest {
 
     public void setStakeholderId(Long stakeholderId) {
         this.stakeholderId = stakeholderId;
+    }
+
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(boolean connected) {
+        isConnected = connected;
     }
 
     public String getRole() {

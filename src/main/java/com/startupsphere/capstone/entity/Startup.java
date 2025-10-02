@@ -1,6 +1,7 @@
 package com.startupsphere.capstone.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "startups")
+@JsonIgnoreProperties({"startupStakeholders", "likes", "bookmarks", "views", "notifications"})
 public class Startup {
 
     @Id
@@ -706,5 +708,13 @@ public class Startup {
 
     public void setRegistrationCertificate(byte[] registrationCertificate) {
         this.registrationCertificate = registrationCertificate;
+    }
+
+    public List<StartupStakeholder> getStartupStakeholders() {
+        return startupStakeholders;
+    }
+
+    public void setStartupStakeholders(List<StartupStakeholder> startupStakeholders) {
+        this.startupStakeholders = startupStakeholders;
     }
 }

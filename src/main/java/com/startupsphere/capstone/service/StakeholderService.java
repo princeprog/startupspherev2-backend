@@ -1,6 +1,7 @@
 package com.startupsphere.capstone.service;
 
 import com.startupsphere.capstone.entity.Stakeholder;
+import com.startupsphere.capstone.entity.StartupStakeholder;
 import com.startupsphere.capstone.repository.StakeholderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +37,20 @@ public class StakeholderService {
         return repository.save(stakeholder);
     }
 
+    @Transactional
     public void deleteById(Long id) {
-        repository.deleteById(id);
+        repository.findById(id).ifPresent(stakeholder -> {
+            // Delete associated StartupStakeholder entries
+            List<StartupStakeholder> associatedStartupStakeholders = stakeholder.getStartupStakeholders();
+            if (associatedStartupStakeholders != null && !associatedStartupStakeholders.isEmpty()) {
+                for (StartupStakeholder startupStakeholder : associatedStartupStakeholders) {
+                    startupStakeholder.getStartup().getStartupStakeholders().remove(startupStakeholder);
+                }
+            }
+
+            // Delete the Stakeholder
+            repository.deleteById(id);
+        });
     }
 
     @Transactional

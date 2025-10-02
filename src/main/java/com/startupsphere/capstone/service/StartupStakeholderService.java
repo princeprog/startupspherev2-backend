@@ -49,6 +49,7 @@ public class StartupStakeholderService {
         startupStakeholder.setStakeholder(stakeholder);
         startupStakeholder.setRole(request.getRole());
         startupStakeholder.setStatus(request.getStatus());
+        startupStakeholder.setConnected(true); // Default to connected when created
         return repository.save(startupStakeholder);
     }
 
@@ -73,7 +74,7 @@ public class StartupStakeholderService {
                     // Update other fields
                     existing.setRole(request.getRole());
                     existing.setStatus(request.getStatus());
-
+                    existing.setConnected(request.isConnected());
                     return ResponseEntity.ok(repository.save(existing));
                 })
                 .orElse(ResponseEntity.notFound().build());
