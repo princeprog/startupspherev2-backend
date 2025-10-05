@@ -438,6 +438,31 @@ public class StartupController {
                 .body(file);
     }
 
+    @GetMapping("/review")
+    public ResponseEntity<List<Startup>> getStartupsWithFilters(
+            @RequestParam(required = false) String industry,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+
+        try {
+            List<Startup> startups = startupService.getStartupsWithFilters(
+                    industry,
+                    status,
+                    region,
+                    search,
+                    startDate,
+                    endDate
+            );
+            return ResponseEntity.ok(startups);
+        } catch (Exception e) {
+            logger.error("Error fetching filtered startups: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     public static class VerificationRequest {
         private Long startupId;
         private String email;

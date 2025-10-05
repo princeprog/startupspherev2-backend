@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.startupsphere.capstone.repository.ViewsRepository;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -412,5 +413,28 @@ public class StartupService {
             logger.error("IOException while sending reminder email to {}: {}", toEmail, e.getMessage(), e);
             throw new RuntimeException("Failed to send reminder email: " + e.getMessage(), e);
         }
+    }
+
+    public List<Startup> getStartupsWithFilters(
+            String industry,
+            String status,
+            String region,
+            String search,
+            String startDate,
+            String endDate) {
+
+        LocalDateTime parsedStartDate = startDate != null ?
+                LocalDate.parse(startDate).atStartOfDay() : null;
+        LocalDateTime parsedEndDate = endDate != null ?
+                LocalDate.parse(endDate).atTime(23, 59, 59) : null;
+
+        return startupRepository.findStartupsWithFilters(
+                industry,
+                status,
+                region,
+                search,
+                parsedStartDate,
+                parsedEndDate
+        );
     }
 }
