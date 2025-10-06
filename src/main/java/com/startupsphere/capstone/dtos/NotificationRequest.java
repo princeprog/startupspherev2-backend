@@ -5,6 +5,8 @@ public class NotificationRequest {
     private Long startupId;
     private Integer userId;
 
+    private String comments;
+
     public String getRemarks(){
         return remarks;
     }
@@ -27,5 +29,13 @@ public class NotificationRequest {
 
     public void setUserId(Integer userId){
         this.userId = userId;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 }

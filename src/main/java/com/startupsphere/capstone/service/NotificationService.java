@@ -34,6 +34,7 @@ public class NotificationService {
     public Notifications createNotifications(NotificationRequest request) {
         Notifications notification = new Notifications();
         notification.setRemarks(request.getRemarks());
+        notification.setComments(request.getComments());
 
         Startup startup = srepo.findById(request.getStartupId())
                 .orElseThrow(() -> new IllegalArgumentException("Startup not found"));
@@ -159,18 +160,21 @@ public class NotificationService {
         }
     }
 
-    public Notifications createStartupApprovalNotification(Startup startup, String status){
+    public Notifications createStartupApprovalNotification(Startup startup, String status, String comments) {
         NotificationRequest request = new NotificationRequest();
 
         switch (status.toLowerCase()) {
             case "approved":
                 request.setRemarks(String.format(NotificationRemarks.STARTUP_APPROVED, startup.getCompanyName()));
+                request.setComments("Congratulations! Your startup has been approved. " + comments);
                 break;
             case "rejected":
                 request.setRemarks(String.format(NotificationRemarks.STARTUP_REJECTED, startup.getCompanyName()));
+                request.setComments("Your startup application has been rejected. " + comments);
                 break;
             case "in review":
                 request.setRemarks(String.format(NotificationRemarks.STARTUP_SUBMITTED, startup.getCompanyName()));
+                request.setComments("Your startup application is now under review. " + comments);
                 break;
             default:
                 break;

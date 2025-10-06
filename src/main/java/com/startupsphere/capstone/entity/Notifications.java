@@ -24,6 +24,8 @@ public class Notifications {
 
     private boolean isViewed = false;
     private LocalDateTime viewedAt;
+    private String comments;
+
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
@@ -31,13 +33,15 @@ public class Notifications {
 
     public Notifications(){}
 
-    public Notifications(int id, String remarks, Startup startup, User user, boolean isViewed, LocalDateTime viewedAt){
+    public Notifications(int id, String remarks, Startup startup, User user, boolean isViewed, LocalDateTime viewedAt, String comments, Date createdAt) {
         this.id = id;
         this.remarks = remarks;
         this.startup = startup;
         this.user = user;
         this.isViewed = isViewed;
         this.viewedAt = viewedAt;
+        this.comments = comments;
+        this.createdAt = createdAt;
     }
 
     public void setId(int id){
@@ -86,4 +90,18 @@ public class Notifications {
     public LocalDateTime getViewedAt(){
         return viewedAt;
     }
+
+    public void setComments(String comments){
+        this.comments = comments;
+    }
+
+    public String getComments(){
+        return comments;
+    }
+
+    public Date getCreatedAt(){
+        return createdAt;
+    }
+
+
 }

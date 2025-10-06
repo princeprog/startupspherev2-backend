@@ -61,7 +61,11 @@ public class StartupController {
         try {
             Startup createdStartup = startupService.createStartup(startup);
             logger.info("Startup created successfully with ID: {}", createdStartup.getId());
-            notificationService.createStartupApprovalNotification(createdStartup, "in review");
+            notificationService.createStartupApprovalNotification(
+                    createdStartup,
+                    "in review",
+                    "New startup application submitted for review."
+            );
             return ResponseEntity.ok(createdStartup);
         } catch (Exception e) {
             logger.error("Error creating startup: {}", e.getMessage(), e);
