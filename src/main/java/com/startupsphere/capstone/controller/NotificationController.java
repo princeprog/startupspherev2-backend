@@ -48,7 +48,7 @@ public class NotificationController {
         try {
             logger.info("Creating new notification");
             Startup startup = srepo.findById(request.getStartupId()).orElseThrow(()-> new IllegalArgumentException("Startup not found"));
-            Notifications notifications = notificationService.createStartupApprovalNotification(startup, "in review");
+            Notifications notifications = notificationService.createStartupApprovalNotification(startup, "in review", request.getComments());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse(true, "Notification created successfully", notifications));
         } catch (Exception e) {
@@ -249,24 +249,28 @@ public class NotificationController {
     }
 
     @PutMapping("/startups/{id}/approve")
-    public ResponseEntity<ApiResponse> approveStartup(@PathVariable long id) {
+    public ResponseEntity<ApiResponse> approveStartup(@PathVariable long id, @RequestBody NotificationRequest request) {
         try {
             Startup startup = startupService.approveStartup(id);
-            Notifications notifications = notificationService.createStartupApprovalNotification(startup, "approved");
+            Notifications notifications = notificationService.createStartupApprovalNotification(
+                    startup,
+                    "approved",
+                    request.getComments()
+            );
             return ResponseEntity.ok()
                     .body(new ApiResponse(true, "Startup approved successfully", startup));
         } catch (Exception e) {
             logger.error("Error approving startup: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ApiResponse(false,"Error approving startup: {}", e.getMessage()));
+                    .body(new ApiResponse(false, "Error approving startup", null));
         }
     }
 
     @PutMapping("/startups/{id}/reject")
-    public ResponseEntity<ApiResponse> rejectStartup(@PathVariable long id) {
+    public ResponseEntity<ApiResponse> rejectStartup(@PathVariable long id, @RequestBody NotificationRequest request) {
         try {
             Startup startup = startupService.rejectStartup(id);
-            Notifications notifications = notificationService.createStartupApprovalNotification(startup, "rejected");
+            Notifications notifications = notificationService.createStartupApprovalNotification(startup, "rejected", request.getComments());
             return ResponseEntity.ok()
                     .body(new ApiResponse(true, "Startup rejected successfully", startup));
         } catch (Exception e) {
