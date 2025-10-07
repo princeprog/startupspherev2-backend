@@ -467,6 +467,17 @@ public class StartupController {
         }
     }
 
+    @GetMapping("/industries")
+    public ResponseEntity<List<String>> getDistinctIndustries() {
+        try {
+            List<String> industries = startupService.getDistinctIndustries();
+            return ResponseEntity.ok(industries);
+        } catch (Exception e) {
+            logger.error("Error fetching distinct industries: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     public static class VerificationRequest {
         private Long startupId;
         private String email;
