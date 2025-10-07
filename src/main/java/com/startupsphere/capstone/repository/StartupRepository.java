@@ -45,4 +45,7 @@ public interface StartupRepository extends JpaRepository<Startup, Long> {
 
     @Query("SELECT s FROM Startup s WHERE s.lastUpdated < :threshold AND s.emailVerified = true")
     List<Startup> findStartupsNotUpdatedSince(LocalDateTime threshold);
+
+    @Query("SELECT DISTINCT s.industry FROM Startup s WHERE s.industry IS NOT NULL")
+    List<String> findDistinctIndustries();
 }

@@ -437,4 +437,8 @@ public class StartupService {
                 parsedEndDate
         );
     }
+
+    public List<String> getDistinctIndustries() {
+        return startupRepository.findDistinctIndustries();
+    }
 }
