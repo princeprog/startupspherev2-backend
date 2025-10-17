@@ -34,7 +34,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/startups", "/startups/**").permitAll()
-                        .requestMatchers("/investors", "/investors/**").permitAll()
+                        .requestMatchers("/stakeholders", "/stakeholders/**").permitAll()
+                        .requestMatchers("/startup-stakeholders", "/startup-stakeholders/**").permitAll()
                         .requestMatchers("/api/bookmarks/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session

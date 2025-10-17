@@ -48,4 +48,10 @@ public interface StartupRepository extends JpaRepository<Startup, Long> {
 
     @Query("SELECT DISTINCT s.industry FROM Startup s WHERE s.industry IS NOT NULL")
     List<String> findDistinctIndustries();
+
+    @Query("SELECT s FROM Startup s WHERE " +
+            "LOWER(s.companyName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(s.companyDescription) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(s.locationName) LIKE LOWER(CONCAT('%', :query, '%'))")
+    List<Startup> searchByFields(@Param("query") String query);
 }
