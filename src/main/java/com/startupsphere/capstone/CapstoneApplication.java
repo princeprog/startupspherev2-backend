@@ -10,9 +10,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class CapstoneApplication {
 
     public static void main(String[] args) {
-        //Load environment variables from .env
-        Dotenv dotenv = Dotenv.load();
-        System.setProperty("SENDGRID_API_KEY", dotenv.get("SENDGRID_API_KEY"));
+        // Load environment variables from .env or system environment
+        Dotenv dotenv = Dotenv.configure()
+                .ignoreIfMissing()
+                .load();
+        String sendGridApiKey = dotenv.get("SENDGRID_API_KEY", System.getenv("SENDGRID_API_KEY") != null ? System.getenv("SENDGRID_API_KEY") : "");
+        System.setProperty("SENDGRID_API_KEY", sendGridApiKey);
 
         SpringApplication.run(CapstoneApplication.class, args);
         System.out.println("Running");
