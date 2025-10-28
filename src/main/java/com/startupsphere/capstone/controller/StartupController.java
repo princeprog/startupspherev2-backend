@@ -23,9 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/startups")
@@ -162,7 +160,8 @@ public class StartupController {
     public ResponseEntity<String> uploadStartupCsv(
             @PathVariable Long startupId,
             @RequestParam("file") MultipartFile file) {
-        if (file.isEmpty() || !file.getOriginalFilename().endsWith(".csv")) {
+        String fileName = file.getOriginalFilename();
+        if (file.isEmpty() || fileName == null || !fileName.endsWith(".csv")) {
             return ResponseEntity.badRequest().body("Please upload a valid CSV file.");
         }
 
@@ -285,8 +284,9 @@ public class StartupController {
                 photo.getSize(),
                 photo.getContentType());
 
-        if (!photo.getContentType().startsWith("image/")) {
-            logger.warn("Invalid file type uploaded for startup ID: {}. Content-Type: {}", id, photo.getContentType());
+        String contentType = photo.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            logger.warn("Invalid file type uploaded for startup ID: {}. Content-Type: {}", id, contentType);
             return ResponseEntity.badRequest().body(
                     new ErrorResponse("Please upload a valid image file (e.g., JPEG, PNG)."));
         }
@@ -308,7 +308,7 @@ public class StartupController {
             startup.setPhoto(photoBytes);
             logger.info("Set photo bytes to startup entity");
 
-            Startup updatedStartup = startupService.updateStartup(id, startup);
+            startupService.updateStartup(id, startup);
             logger.info("Successfully updated startup with photo");
 
             return ResponseEntity.ok(
@@ -411,7 +411,7 @@ public class StartupController {
             logger.info("Successfully read registration certificate bytes, size: {}", fileBytes.length);
 
             startup.setRegistrationCertificate(fileBytes);
-            Startup updatedStartup = startupService.updateStartup(id, startup);
+            startupService.updateStartup(id, startup);
             logger.info("Successfully updated startup with registration certificate");
 
             return ResponseEntity.ok(
@@ -477,6 +477,304 @@ public class StartupController {
             return ResponseEntity.status(500).build();
         }
     }
+
+    @PostMapping("/upload-startups")
+    public ResponseEntity<?> uploadStartupsCsv(@RequestParam("file") MultipartFile file) {
+        String fileName = file.getOriginalFilename();
+        if (file.isEmpty() || fileName == null || !fileName.toLowerCase().endsWith(".csv")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Please upload a valid CSV file."));
+        }
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            String headerLine = reader.readLine();
+            if (headerLine == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "CSV file is empty."));
+            }
+
+            logger.info("Processing CSV upload with header: {}", headerLine);
+
+            List<Startup> startups = new ArrayList<>();
+            List<String> errors = new ArrayList<>();
+            String line;
+            int lineNumber = 1;
+            int successCount = 0;
+            int skipCount = 0;
+
+            // Retrieve the currently authenticated user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Unauthorized: No authenticated user found."));
+            }
+            User loggedInUser = (User) authentication.getPrincipal();
+
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                
+                // Skip empty lines
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
+                String[] fields = line.split(",", -1); // -1 to preserve trailing empty strings
+
+                // Log raw line for first few records to debug
+                if (lineNumber <= 3) {
+                    logger.info("Line {}: Total fields={}, Raw line preview: {}", 
+                        lineNumber, fields.length, line.length() > 200 ? line.substring(0, 200) + "..." : line);
+                }
+
+                try {
+                    // Validate minimum required fields
+                    String companyName = getSafe(fields, 0);
+                    if (companyName == null || companyName.isEmpty()) {
+                        throw new IllegalArgumentException("Company name is required");
+                    }
+
+                    Startup startup = new Startup();
+                    startup.setUser(loggedInUser);
+                    
+                    // Basic Information
+                    startup.setCompanyName(companyName);
+                    startup.setCompanyDescription(getSafe(fields, 1));
+                    startup.setFoundedDate(getSafe(fields, 2));
+                    startup.setTypeOfCompany(getSafe(fields, 3));
+                    startup.setNumberOfEmployees(getSafe(fields, 4));
+                    startup.setPhoneNumber(getSafe(fields, 5));
+                    startup.setContactEmail(getSafe(fields, 6));
+                    
+                    // Address Information
+                    startup.setStreetAddress(getSafe(fields, 7));
+                    startup.setCity(getSafe(fields, 8));
+                    startup.setProvince(getSafe(fields, 9));
+                    startup.setPostalCode(getSafe(fields, 10));
+                    
+                    // Category and Social Media
+                    startup.setIndustry(getSafe(fields, 11));
+                    startup.setWebsite(getSafe(fields, 12));
+                    startup.setFacebook(getSafe(fields, 13));
+                    startup.setTwitter(getSafe(fields, 14));
+                    startup.setInstagram(getSafe(fields, 15));
+                    startup.setLinkedIn(getSafe(fields, 16));
+                    
+                    // Location Coordinates
+                    startup.setLocationLat(parseDoubleSafe(getSafe(fields, 17)));
+                    startup.setLocationLng(parseDoubleSafe(getSafe(fields, 18)));
+                    startup.setLocationName(getSafe(fields, 19));
+                    
+                    // Status and Code
+                    startup.setStartupCode(getSafe(fields, 20));
+                    startup.setStatus(getSafe(fields, 21));
+                    
+                    // Financial Information
+                    // revenue is primitive double, others are nullable Double
+                    String revenueStr = getSafe(fields, 22);
+                    startup.setRevenue(parseDoubleSafeWithDefault(revenueStr, 0.0));
+                    
+                    String annualRevenueStr = getSafe(fields, 23);
+                    startup.setAnnualRevenue(parseDoubleSafe(annualRevenueStr));
+                    
+                    startup.setPaidUpCapital(parseDoubleSafe(getSafe(fields, 24)));
+                    
+                    // Business Details
+                    startup.setFundingStage(getSafe(fields, 25));
+                    startup.setBusinessActivity(getSafe(fields, 26));
+                    startup.setOperatingHours(getSafe(fields, 27));
+                    
+                    // Metrics - All are primitive int, so use default of 0
+                    String numActiveStartupsStr = getSafe(fields, 28);
+                    startup.setNumberOfActiveStartups(parseIntSafeWithDefault(numActiveStartupsStr, 0));
+                    
+                    String numNewStartupsStr = getSafe(fields, 29);
+                    startup.setNumberOfNewStartupsThisYear(parseIntSafeWithDefault(numNewStartupsStr, 0));
+                    
+                    startup.setAverageStartupGrowthRate(parseDoubleSafeWithDefault(getSafe(fields, 30), 0.0));
+                    startup.setStartupSurvivalRate(parseDoubleSafeWithDefault(getSafe(fields, 31), 0.0));
+                    startup.setTotalStartupFundingReceived(parseDoubleSafeWithDefault(getSafe(fields, 32), 0.0));
+                    startup.setAverageFundingPerStartup(parseDoubleSafeWithDefault(getSafe(fields, 33), 0.0));
+                    
+                    String numFundingRoundsStr = getSafe(fields, 34);
+                    startup.setNumberOfFundingRounds(parseIntSafeWithDefault(numFundingRoundsStr, 0));
+                    
+                    String numForeignInvestmentStr = getSafe(fields, 35);
+                    startup.setNumberOfStartupsWithForeignInvestment(parseIntSafeWithDefault(numForeignInvestmentStr, 0));
+                    
+                    startup.setAmountOfGovernmentGrantsOrSubsidiesReceived(parseDoubleSafeWithDefault(getSafe(fields, 36), 0.0));
+                    startup.setNumberOfStartupIncubatorsOrAccelerators(parseIntSafeWithDefault(getSafe(fields, 37), 0));
+                    startup.setNumberOfStartupsInIncubationPrograms(parseIntSafeWithDefault(getSafe(fields, 38), 0));
+                    startup.setNumberOfMentorsOrAdvisorsInvolved(parseIntSafeWithDefault(getSafe(fields, 39), 0));
+                    startup.setPublicPrivatePartnershipsInvolvingStartups(parseIntSafeWithDefault(getSafe(fields, 40), 0));
+                    
+                    // Regional Information
+                    startup.setRegion(getSafe(fields, 41));
+                    startup.setBarangay(getSafe(fields, 42));
+                    
+                    // Registration Information
+                    startup.setIsGovernmentRegistered(parseBooleanSafe(getSafe(fields, 43)));
+                    startup.setRegistrationAgency(getSafe(fields, 44));
+                    
+                    String registrationNumberStr = getSafe(fields, 45);
+                    startup.setRegistrationNumber(registrationNumberStr);
+                    
+                    startup.setRegistrationDate(getSafe(fields, 46));
+                    startup.setOtherRegistrationAgency(getSafe(fields, 47));
+                    startup.setBusinessLicenseNumber(getSafe(fields, 48));
+                    startup.setTin(getSafe(fields, 49));
+
+                    // Log for debugging specific problematic fields
+                    if (lineNumber <= 3) {
+                        logger.info("Line {} parsed values - revenue: '{}'->{}, annualRevenue: '{}'->{}, numActiveStartups: '{}'->{}, numNewStartups: '{}'->{}, numFundingRounds: '{}'->{}, numForeignInvestment: '{}'->{}, registrationNumber: '{}'=>'{}'",
+                            lineNumber, 
+                            revenueStr, startup.getRevenue(),
+                            annualRevenueStr, startup.getAnnualRevenue(),
+                            numActiveStartupsStr, startup.getNumberOfActiveStartups(),
+                            numNewStartupsStr, startup.getNumberOfNewStartupsThisYear(),
+                            numFundingRoundsStr, startup.getNumberOfFundingRounds(),
+                            numForeignInvestmentStr, startup.getNumberOfStartupsWithForeignInvestment(),
+                            registrationNumberStr, startup.getRegistrationNumber());
+                    }
+
+                    startups.add(startup);
+                    successCount++;
+                } catch (Exception e) {
+                    skipCount++;
+                    String errorMsg = String.format("Line %d: %s", lineNumber, e.getMessage());
+                    errors.add(errorMsg);
+                    logger.warn("Skipping line {}: {}", lineNumber, e.getMessage());
+                }
+            }
+
+            // Save all valid startups in batch
+            if (!startups.isEmpty()) {
+                try {
+                    List<Startup> savedStartups = startupRepository.saveAll(startups);
+                    logger.info("Successfully saved {} startups from CSV upload", savedStartups.size());
+                    
+                    // Log sample of saved data for verification (first startup only)
+                    if (!savedStartups.isEmpty() && logger.isInfoEnabled()) {
+                        Startup sample = savedStartups.get(0);
+                        logger.info("Sample saved startup - ID: {}, Name: {}, Revenue: {}, AnnualRevenue: {}, NumActiveStartups: {}, NumNewStartups: {}, NumFundingRounds: {}, NumForeignInvestment: {}, RegistrationNumber: {}",
+                            sample.getId(), sample.getCompanyName(), sample.getRevenue(), 
+                            sample.getAnnualRevenue(), sample.getNumberOfActiveStartups(),
+                            sample.getNumberOfNewStartupsThisYear(), sample.getNumberOfFundingRounds(),
+                            sample.getNumberOfStartupsWithForeignInvestment(), sample.getRegistrationNumber());
+                    }
+                } catch (Exception e) {
+                    logger.error("Error saving startups to database: {}", e.getMessage(), e);
+                    return ResponseEntity.status(500).body(Map.of("error", "Error saving to database: " + e.getMessage()));
+                }
+            }
+
+            // Prepare response
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "CSV file processed successfully");
+            response.put("successCount", successCount);
+            response.put("skippedCount", skipCount);
+            response.put("totalProcessed", lineNumber - 1);
+            
+            if (!errors.isEmpty() && errors.size() <= 10) {
+                // Only include errors if there aren't too many
+                response.put("errors", errors);
+            } else if (!errors.isEmpty()) {
+                response.put("errorSummary", String.format("%d rows had errors. Check logs for details.", skipCount));
+            }
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error processing CSV file: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Map.of("error", "Error processing the file: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Safely get a string value from array at index.
+     * Returns null only if index is out of bounds or value is null.
+     * Returns the trimmed string even if it's empty (to preserve empty strings vs null).
+     */
+    private String getSafe(String[] arr, int index) {
+        if (index < arr.length && arr[index] != null) {
+            String trimmed = arr[index].trim();
+            // Return null for truly empty strings, but preserve "0" and other values
+            return trimmed.isEmpty() ? null : trimmed;
+        }
+        return null;
+    }
+
+    /**
+     * Parse Double with null return for invalid/empty values.
+     * Preserves zero values.
+     */
+    private Double parseDoubleSafe(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            logger.debug("Failed to parse double value: '{}'", value);
+            return null;
+        }
+    }
+
+    /**
+     * Parse double with default value for primitive fields.
+     * Preserves zero values from CSV.
+     */
+    private double parseDoubleSafeWithDefault(String value, double defaultValue) {
+        if (value == null || value.isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            logger.debug("Failed to parse double value: '{}', using default: {}", value, defaultValue);
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Parse Integer with null return for invalid/empty values.
+     * Preserves zero values.
+     */
+    private Integer parseIntSafe(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            logger.debug("Failed to parse integer value: '{}'", value);
+            return null;
+        }
+    }
+
+    /**
+     * Parse int with default value for primitive fields.
+     * Preserves zero values from CSV.
+     */
+    private int parseIntSafeWithDefault(String value, int defaultValue) {
+        if (value == null || value.isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            logger.debug("Failed to parse integer value: '{}', using default: {}", value, defaultValue);
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Parse Boolean safely handling various representations.
+     */
+    private Boolean parseBooleanSafe(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        // Handle common boolean representations
+        String lowerValue = value.toLowerCase().trim();
+        return lowerValue.equals("true") || lowerValue.equals("1") || lowerValue.equals("yes");
+    }
+
 
     public static class VerificationRequest {
         private Long startupId;
