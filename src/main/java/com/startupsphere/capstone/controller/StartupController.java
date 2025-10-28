@@ -493,6 +493,15 @@ public class StartupController {
 
             logger.info("Processing CSV upload with header: {}", headerLine);
 
+            // Parse headers and create a mapping from column name to index
+            String[] headers = headerLine.split(",", -1);
+            Map<String, Integer> headerMap = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                String headerName = headers[i].trim().toLowerCase();
+                headerMap.put(headerName, i);
+                logger.debug("Header[{}]: '{}'", i, headerName);
+            }
+
             List<Startup> startups = new ArrayList<>();
             List<String> errors = new ArrayList<>();
             String line;
@@ -525,7 +534,7 @@ public class StartupController {
 
                 try {
                     // Validate minimum required fields
-                    String companyName = getSafe(fields, 0);
+                    String companyName = getValueByHeader(fields, headerMap, "companyname");
                     if (companyName == null || companyName.isEmpty()) {
                         throw new IllegalArgumentException("Company name is required");
                     }
@@ -535,90 +544,90 @@ public class StartupController {
                     
                     // Basic Information
                     startup.setCompanyName(companyName);
-                    startup.setCompanyDescription(getSafe(fields, 1));
-                    startup.setFoundedDate(getSafe(fields, 2));
-                    startup.setTypeOfCompany(getSafe(fields, 3));
-                    startup.setNumberOfEmployees(getSafe(fields, 4));
-                    startup.setPhoneNumber(getSafe(fields, 5));
-                    startup.setContactEmail(getSafe(fields, 6));
+                    startup.setCompanyDescription(getValueByHeader(fields, headerMap, "companydescription"));
+                    startup.setFoundedDate(getValueByHeader(fields, headerMap, "foundeddate"));
+                    startup.setTypeOfCompany(getValueByHeader(fields, headerMap, "typeofcompany"));
+                    startup.setNumberOfEmployees(getValueByHeader(fields, headerMap, "numberofemployees"));
+                    startup.setPhoneNumber(getValueByHeader(fields, headerMap, "phonenumber"));
+                    startup.setContactEmail(getValueByHeader(fields, headerMap, "contactemail"));
                     
                     // Address Information
-                    startup.setStreetAddress(getSafe(fields, 7));
-                    startup.setCity(getSafe(fields, 8));
-                    startup.setProvince(getSafe(fields, 9));
-                    startup.setPostalCode(getSafe(fields, 10));
+                    startup.setStreetAddress(getValueByHeader(fields, headerMap, "streetaddress"));
+                    startup.setCity(getValueByHeader(fields, headerMap, "city"));
+                    startup.setProvince(getValueByHeader(fields, headerMap, "province"));
+                    startup.setPostalCode(getValueByHeader(fields, headerMap, "postalcode"));
                     
                     // Category and Social Media
-                    startup.setIndustry(getSafe(fields, 11));
-                    startup.setWebsite(getSafe(fields, 12));
-                    startup.setFacebook(getSafe(fields, 13));
-                    startup.setTwitter(getSafe(fields, 14));
-                    startup.setInstagram(getSafe(fields, 15));
-                    startup.setLinkedIn(getSafe(fields, 16));
+                    startup.setIndustry(getValueByHeader(fields, headerMap, "industry"));
+                    startup.setWebsite(getValueByHeader(fields, headerMap, "website"));
+                    startup.setFacebook(getValueByHeader(fields, headerMap, "facebook"));
+                    startup.setTwitter(getValueByHeader(fields, headerMap, "twitter"));
+                    startup.setInstagram(getValueByHeader(fields, headerMap, "instagram"));
+                    startup.setLinkedIn(getValueByHeader(fields, headerMap, "linkedin"));
                     
                     // Location Coordinates
-                    startup.setLocationLat(parseDoubleSafe(getSafe(fields, 17)));
-                    startup.setLocationLng(parseDoubleSafe(getSafe(fields, 18)));
-                    startup.setLocationName(getSafe(fields, 19));
+                    startup.setLocationLat(parseDoubleSafe(getValueByHeader(fields, headerMap, "locationlat")));
+                    startup.setLocationLng(parseDoubleSafe(getValueByHeader(fields, headerMap, "locationlng")));
+                    startup.setLocationName(getValueByHeader(fields, headerMap, "locationname"));
                     
                     // Status and Code
-                    startup.setStartupCode(getSafe(fields, 20));
-                    startup.setStatus(getSafe(fields, 21));
+                    startup.setStartupCode(getValueByHeader(fields, headerMap, "startupcode"));
+                    startup.setStatus(getValueByHeader(fields, headerMap, "status"));
                     
                     // Financial Information
                     // revenue is primitive double, others are nullable Double
-                    String revenueStr = getSafe(fields, 22);
+                    String revenueStr = getValueByHeader(fields, headerMap, "revenue");
                     startup.setRevenue(parseDoubleSafeWithDefault(revenueStr, 0.0));
                     
-                    String annualRevenueStr = getSafe(fields, 23);
+                    String annualRevenueStr = getValueByHeader(fields, headerMap, "annualrevenue");
                     startup.setAnnualRevenue(parseDoubleSafe(annualRevenueStr));
                     
-                    startup.setPaidUpCapital(parseDoubleSafe(getSafe(fields, 24)));
+                    startup.setPaidUpCapital(parseDoubleSafe(getValueByHeader(fields, headerMap, "paidupcapital")));
                     
                     // Business Details
-                    startup.setFundingStage(getSafe(fields, 25));
-                    startup.setBusinessActivity(getSafe(fields, 26));
-                    startup.setOperatingHours(getSafe(fields, 27));
+                    startup.setFundingStage(getValueByHeader(fields, headerMap, "fundingstage"));
+                    startup.setBusinessActivity(getValueByHeader(fields, headerMap, "businessactivity"));
+                    startup.setOperatingHours(getValueByHeader(fields, headerMap, "operatinghours"));
                     
                     // Metrics - All are primitive int, so use default of 0
-                    String numActiveStartupsStr = getSafe(fields, 28);
+                    String numActiveStartupsStr = getValueByHeader(fields, headerMap, "numberofactivestartups");
                     startup.setNumberOfActiveStartups(parseIntSafeWithDefault(numActiveStartupsStr, 0));
                     
-                    String numNewStartupsStr = getSafe(fields, 29);
+                    String numNewStartupsStr = getValueByHeader(fields, headerMap, "numberOfNewStartupsThisYear");
                     startup.setNumberOfNewStartupsThisYear(parseIntSafeWithDefault(numNewStartupsStr, 0));
                     
-                    startup.setAverageStartupGrowthRate(parseDoubleSafeWithDefault(getSafe(fields, 30), 0.0));
-                    startup.setStartupSurvivalRate(parseDoubleSafeWithDefault(getSafe(fields, 31), 0.0));
-                    startup.setTotalStartupFundingReceived(parseDoubleSafeWithDefault(getSafe(fields, 32), 0.0));
-                    startup.setAverageFundingPerStartup(parseDoubleSafeWithDefault(getSafe(fields, 33), 0.0));
+                    startup.setAverageStartupGrowthRate(parseDoubleSafeWithDefault(getValueByHeader(fields, headerMap, "averageStartupGrowthRate"), 0.0));
+                    startup.setStartupSurvivalRate(parseDoubleSafeWithDefault(getValueByHeader(fields, headerMap, "startupSurvivalRate"), 0.0));
+                    startup.setTotalStartupFundingReceived(parseDoubleSafeWithDefault(getValueByHeader(fields, headerMap, "totalStartupFundingReceived"), 0.0));
+                    startup.setAverageFundingPerStartup(parseDoubleSafeWithDefault(getValueByHeader(fields, headerMap, "averageFundingPerStartup"), 0.0));
                     
-                    String numFundingRoundsStr = getSafe(fields, 34);
+                    String numFundingRoundsStr = getValueByHeader(fields, headerMap, "numberOfFundingRounds");
                     startup.setNumberOfFundingRounds(parseIntSafeWithDefault(numFundingRoundsStr, 0));
                     
-                    String numForeignInvestmentStr = getSafe(fields, 35);
+                    String numForeignInvestmentStr = getValueByHeader(fields, headerMap, "numberOfStartupsWithForeignInvestment");
                     startup.setNumberOfStartupsWithForeignInvestment(parseIntSafeWithDefault(numForeignInvestmentStr, 0));
                     
-                    startup.setAmountOfGovernmentGrantsOrSubsidiesReceived(parseDoubleSafeWithDefault(getSafe(fields, 36), 0.0));
-                    startup.setNumberOfStartupIncubatorsOrAccelerators(parseIntSafeWithDefault(getSafe(fields, 37), 0));
-                    startup.setNumberOfStartupsInIncubationPrograms(parseIntSafeWithDefault(getSafe(fields, 38), 0));
-                    startup.setNumberOfMentorsOrAdvisorsInvolved(parseIntSafeWithDefault(getSafe(fields, 39), 0));
-                    startup.setPublicPrivatePartnershipsInvolvingStartups(parseIntSafeWithDefault(getSafe(fields, 40), 0));
+                    startup.setAmountOfGovernmentGrantsOrSubsidiesReceived(parseDoubleSafeWithDefault(getValueByHeader(fields, headerMap, "amountOfGovernmentGrantsOrSubsidiesReceived"), 0.0));
+                    startup.setNumberOfStartupIncubatorsOrAccelerators(parseIntSafeWithDefault(getValueByHeader(fields, headerMap, "numberOfStartupIncubatorsOrAccelerators"), 0));
+                    startup.setNumberOfStartupsInIncubationPrograms(parseIntSafeWithDefault(getValueByHeader(fields, headerMap, "numberOfStartupsInIncubationPrograms"), 0));
+                    startup.setNumberOfMentorsOrAdvisorsInvolved(parseIntSafeWithDefault(getValueByHeader(fields, headerMap, "numberOfMentorsOrAdvisorsInvolved"), 0));
+                    startup.setPublicPrivatePartnershipsInvolvingStartups(parseIntSafeWithDefault(getValueByHeader(fields, headerMap, "publicPrivatePartnershipsInvolvingStartups"), 0));
                     
                     // Regional Information
-                    startup.setRegion(getSafe(fields, 41));
-                    startup.setBarangay(getSafe(fields, 42));
+                    startup.setRegion(getValueByHeader(fields, headerMap, "region"));
+                    startup.setBarangay(getValueByHeader(fields, headerMap, "barangay"));
                     
                     // Registration Information
-                    startup.setIsGovernmentRegistered(parseBooleanSafe(getSafe(fields, 43)));
-                    startup.setRegistrationAgency(getSafe(fields, 44));
+                    startup.setIsGovernmentRegistered(parseBooleanSafe(getValueByHeader(fields, headerMap, "isGovernmentRegistered")));
+                    startup.setRegistrationAgency(getValueByHeader(fields, headerMap, "registrationAgency"));
                     
-                    String registrationNumberStr = getSafe(fields, 45);
+                    String registrationNumberStr = getValueByHeader(fields, headerMap, "registrationNumber");
                     startup.setRegistrationNumber(registrationNumberStr);
                     
-                    startup.setRegistrationDate(getSafe(fields, 46));
-                    startup.setOtherRegistrationAgency(getSafe(fields, 47));
-                    startup.setBusinessLicenseNumber(getSafe(fields, 48));
-                    startup.setTin(getSafe(fields, 49));
+                    startup.setRegistrationDate(getValueByHeader(fields, headerMap, "registrationDate"));
+                    startup.setOtherRegistrationAgency(getValueByHeader(fields, headerMap, "otherRegistrationagency"));
+                    startup.setBusinessLicenseNumber(getValueByHeader(fields, headerMap, "businessLicensenumber"));
+                    startup.setTin(getValueByHeader(fields, headerMap, "tin"));
 
                     // Log for debugging specific problematic fields
                     if (lineNumber <= 3) {
@@ -697,6 +706,19 @@ public class StartupController {
             return trimmed.isEmpty() ? null : trimmed;
         }
         return null;
+    }
+
+    /**
+     * Get value from CSV row by header name (case-insensitive).
+     * Uses the header map to find the correct column index.
+     */
+    private String getValueByHeader(String[] fields, Map<String, Integer> headerMap, String headerName) {
+        Integer index = headerMap.get(headerName.toLowerCase());
+        if (index == null) {
+            logger.debug("Header '{}' not found in CSV", headerName);
+            return null;
+        }
+        return getSafe(fields, index);
     }
 
     /**
