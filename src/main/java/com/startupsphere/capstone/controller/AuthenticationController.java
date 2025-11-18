@@ -42,27 +42,22 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> authenticate(
             @RequestBody LoginUserDto loginUserDto,
             HttpServletResponse response) {
-        User authenticatedUser = authenticationService.authenticate(loginUserDto);
 
+        User authenticatedUser = authenticationService.authenticate(loginUserDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);
 
-        // Create an HTTP-only cookie
         ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
                 .httpOnly(true)
-                .secure(true) // Set to true if using HTTPS
+                .secure(true)                    // HTTPS in production
                 .path("/")
+                .domain("localhost")       // CHANGE THIS
                 .sameSite("None")
                 .maxAge(3600)
-                .build(); // No expiration since the token has no expiry
+                .build();
 
-        // Add the cookie to the response
         response.addHeader("Set-Cookie", cookie.toString());
 
-        // Return the response body (optional)
-        LoginResponse loginResponse = new LoginResponse()
-                .setToken(jwtToken); // No expiration time to set
-
-        return ResponseEntity.ok(loginResponse);
+        return ResponseEntity.ok(new LoginResponse().setToken(jwtToken));
     }
 
     @PostMapping("/logout")
