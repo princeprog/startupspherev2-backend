@@ -1,6 +1,5 @@
 package com.startupsphere.capstone.controller;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -42,22 +41,27 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> authenticate(
             @RequestBody LoginUserDto loginUserDto,
             HttpServletResponse response) {
-
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
+
         String jwtToken = jwtService.generateToken(authenticatedUser);
 
+        // Create an HTTP-only cookie
         ResponseCookie cookie = ResponseCookie.from("token", jwtToken)
                 .httpOnly(true)
-                .secure(true)                    // HTTPS in production
+                .secure(true) // Set to true if using HTTPS
                 .path("/")
-                .domain("localhost")       // CHANGE THIS
                 .sameSite("None")
                 .maxAge(3600)
-                .build();
+                .build(); // No expiration since the token has no expiry
 
+        // Add the cookie to the response
         response.addHeader("Set-Cookie", cookie.toString());
 
-        return ResponseEntity.ok(new LoginResponse().setToken(jwtToken));
+        // Return the response body (optional)
+        LoginResponse loginResponse = new LoginResponse()
+                .setToken(jwtToken); // No expiration time to set
+
+        return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/logout")
