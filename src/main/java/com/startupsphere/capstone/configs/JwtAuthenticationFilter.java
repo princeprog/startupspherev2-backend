@@ -43,39 +43,72 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         try {
+            System.out.println("=== JWT FILTER START: " + request.getMethod() + " " + request.getRequestURI() + " ===");
+
             // Extract token from cookies
             String jwt = null;
             if (request.getCookies() != null) {
+                System.out.println("Cookies found: " + Arrays.stream(request.getCookies())
+                        .map(c -> c.getName() + "=" + c.getValue().substring(0, Math.min(20, c.getValue().length())) + "...")
+                        .toList());
+
                 jwt = Arrays.stream(request.getCookies())
                         .filter(cookie -> "token".equals(cookie.getName()))
                         .map(Cookie::getValue)
                         .findFirst()
                         .orElse(null);
+            } else {
+                System.out.println("No cookies in request");
             }
 
             if (jwt == null) {
+                System.out.println("No JWT token found in cookies → skipping auth");
                 filterChain.doFilter(request, response);
                 return;
             }
 
+            System.out.println("JWT Token found: " + jwt.substring(0, Math.min(30, jwt.length())) + "...");
+
             final String userEmail = jwtService.extractUsername(jwt);
-            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            System.out.println("Extracted email from JWT: " + userEmail);
 
-                if (jwtService.isTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
+            if (userEmail == null) {
+                System.out.println("Email is null → invalid token");
+                filterChain.doFilter(request, response);
+                return;
+            }
 
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
+            if (SecurityContextHolder.getContext().getAuthentication() != null) {
+                System.out.println("User already authenticated → skipping");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            System.out.println("Loaded UserDetails for: " + userDetails.getUsername());
+
+            boolean isValid = jwtService.isTokenValid(jwt, userDetails);
+            System.out.println("JWT isTokenValid: " + isValid);
+
+            if (isValid) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("Authentication SUCCESS → User: " + userDetails.getUsername());
+            } else {
+                System.out.println("JWT validation FAILED");
             }
 
             filterChain.doFilter(request, response);
+            System.out.println("=== JWT FILTER END ===\n");
+
         } catch (Exception exception) {
+            System.err.println("JWT Filter Exception: " + exception.getClass().getSimpleName() + " - " + exception.getMessage());
+            exception.printStackTrace();
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
     }
