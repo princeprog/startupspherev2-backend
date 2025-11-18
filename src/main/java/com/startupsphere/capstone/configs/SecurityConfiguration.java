@@ -32,7 +32,6 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/startups/draft").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/startups", "/startups/**").permitAll()
                         .requestMatchers("/stakeholders", "/stakeholders/**").permitAll()
@@ -55,7 +54,6 @@ public class SecurityConfiguration {
             "https://startupsphere-azure.vercel.app", // Replace with your actual Vercel domain
             "https://localhost:3000",
             "https://localhost:5173",
-            "http://localhost:5173",
                 "https://localhost:5174",
                 "https://startupsphere-git-test-alprinces-projects.vercel.app/"
 
