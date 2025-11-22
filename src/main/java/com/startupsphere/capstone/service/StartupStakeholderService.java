@@ -7,6 +7,7 @@ import com.startupsphere.capstone.entity.StartupStakeholder;
 import com.startupsphere.capstone.repository.StakeholderRepository;
 import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.repository.StartupStakeholderRepository;
+import com.startupsphere.capstone.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -39,18 +40,40 @@ public class StartupStakeholderService {
         return repository.findById(id);
     }
 
-    public StartupStakeholder save(StartupStakeholderRequest request) {
-        StartupStakeholder startupStakeholder = new StartupStakeholder();
+    public ApiResponse save(StartupStakeholderRequest request) {
+        // Validate startup exists
         Startup startup = srepo.findById(request.getStartupId())
-                .orElseThrow(() -> new IllegalArgumentException("Startup not found"));
-        startupStakeholder.setStartup(startup);
+                .orElse(null);
+        if (startup == null) {
+            return new ApiResponse(false, "Startup not found with ID: " + request.getStartupId(), null);
+        }
+        
+        // Validate stakeholder exists
         Stakeholder stakeholder = strepo.findById(request.getStakeholderId())
-                .orElseThrow(() -> new IllegalArgumentException("Stakeholder not found"));
+                .orElse(null);
+        if (stakeholder == null) {
+            return new ApiResponse(false, "Stakeholder not found with ID: " + request.getStakeholderId(), null);
+        }
+        
+        // Check for duplicate stakeholder in the startup
+        List<StartupStakeholder> existingStakeholders = repository.findByStartupId(request.getStartupId());
+        boolean isDuplicate = existingStakeholders.stream()
+                .anyMatch(ss -> ss.getStakeholder().getId().equals(request.getStakeholderId()));
+        
+        if (isDuplicate) {
+            return new ApiResponse(false, "This stakeholder has already been added to this startup", null);
+        }
+        
+        // Create and save new startup-stakeholder relationship
+        StartupStakeholder startupStakeholder = new StartupStakeholder();
+        startupStakeholder.setStartup(startup);
         startupStakeholder.setStakeholder(stakeholder);
         startupStakeholder.setRole(request.getRole());
         startupStakeholder.setStatus(request.getStatus());
         startupStakeholder.setConnected(true); // Default to connected when created
-        return repository.save(startupStakeholder);
+        StartupStakeholder saved = repository.save(startupStakeholder);
+        
+        return new ApiResponse(true, "Stakeholder successfully added to startup", saved);
     }
 
     @Transactional
@@ -90,5 +113,9 @@ public class StartupStakeholderService {
 
     public List<com.startupsphere.capstone.dtos.StakeholderInfoDTO> findStakeholderByStartupId(Long startupId){
         return repository.findStakeholderInfoByStartupId(startupId);
+    }
+
+    public Optional<StartupStakeholder> getStartupStakeholdersById(Long id){
+        return repository.findById(id);
     }
 }

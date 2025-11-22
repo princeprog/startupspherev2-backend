@@ -7,6 +7,7 @@ import com.startupsphere.capstone.entity.StartupStakeholder;
 import com.startupsphere.capstone.repository.StakeholderRepository;
 import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.repository.StartupStakeholderRepository;
+import com.startupsphere.capstone.responses.ApiResponse;
 import com.startupsphere.capstone.service.StartupStakeholderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -46,9 +47,17 @@ public class StartupStakeholderController {
         return service.findStakeholderByStartupId(startupId);
     }
 
+    @GetMapping("/stakeholder/{id}")
+    public ResponseEntity<StartupStakeholder> getStartupStakeholderById(@PathVariable Long id) {
+        return service.getStartupStakeholdersById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping
-    public StartupStakeholder create(@RequestBody StartupStakeholderRequest request) {
-        return service.save(request);
+    public ResponseEntity<ApiResponse> create(@RequestBody StartupStakeholderRequest request) {
+        ApiResponse response = service.save(request);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
