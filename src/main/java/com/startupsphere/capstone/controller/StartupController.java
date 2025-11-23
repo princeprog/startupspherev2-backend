@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.*;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 @RestController
 @RequestMapping("/startups")
@@ -161,47 +163,174 @@ public class StartupController {
             @PathVariable Long startupId,
             @RequestParam("file") MultipartFile file) {
         String fileName = file.getOriginalFilename();
-        if (file.isEmpty() || fileName == null || !fileName.endsWith(".csv")) {
-            return ResponseEntity.badRequest().body("Please upload a valid CSV file.");
+        if (file.isEmpty() || fileName == null) {
+            return ResponseEntity.badRequest().body("Please upload a valid file.");
+        }
+        
+        boolean isCsv = fileName.toLowerCase().endsWith(".csv");
+        boolean isExcel = fileName.toLowerCase().endsWith(".xlsx");
+        
+        if (!isCsv && !isExcel) {
+            return ResponseEntity.badRequest().body("Please upload a valid CSV or XLSX file.");
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+        try {
             Optional<Startup> optionalStartup = startupService.getStartupById(startupId);
             if (optionalStartup.isEmpty()) {
                 return ResponseEntity.badRequest().body("Startup with ID " + startupId + " not found.");
             }
 
             Startup startup = optionalStartup.get();
-            String line;
-            boolean isHeader = true;
-
-            while ((line = reader.readLine()) != null) {
-                if (isHeader) {
-                    isHeader = false;
-                    continue;
+            Map<String, Integer> headerMap = new HashMap<>();
+            List<String[]> dataRows = new ArrayList<>();
+            
+            if (isExcel) {
+                // Process Excel file
+                try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+                    Sheet sheet = workbook.getSheetAt(0);
+                    if (sheet.getPhysicalNumberOfRows() == 0) {
+                        return ResponseEntity.badRequest().body("Excel file is empty.");
+                    }
+                    
+                    // Read header row
+                    Row headerRow = sheet.getRow(0);
+                    if (headerRow == null) {
+                        return ResponseEntity.badRequest().body("Excel file has no header row.");
+                    }
+                    
+                    // Build header map
+                    for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+                        Cell cell = headerRow.getCell(i);
+                        if (cell != null) {
+                            String headerName = getCellValueAsString(cell).trim().toLowerCase();
+                            headerMap.put(headerName, i);
+                        }
+                    }
+                    
+                    // Read data rows (should be only one for single startup update)
+                    for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                        Row row = sheet.getRow(i);
+                        if (row != null) {
+                            String[] rowData = new String[headerRow.getLastCellNum()];
+                            for (int j = 0; j < headerRow.getLastCellNum(); j++) {
+                                Cell cell = row.getCell(j);
+                                rowData[j] = cell != null ? getCellValueAsString(cell) : "";
+                            }
+                            dataRows.add(rowData);
+                        }
+                    }
                 }
+            } else {
+                // Process CSV file
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+                    String headerLine = reader.readLine();
+                    if (headerLine == null) {
+                        return ResponseEntity.badRequest().body("CSV file is empty.");
+                    }
 
-                String[] fields = line.split(",");
-                startup.setRevenue(Double.parseDouble(fields[0]));
-                startup.setAnnualRevenue(Double.parseDouble(fields[1]));
-                startup.setPaidUpCapital(Double.parseDouble(fields[2]));
-                startup.setNumberOfActiveStartups(Integer.parseInt(fields[3]));
-                startup.setNumberOfNewStartupsThisYear(Integer.parseInt(fields[4]));
-                startup.setAverageStartupGrowthRate(Double.parseDouble(fields[5]));
-                startup.setStartupSurvivalRate(Double.parseDouble(fields[6]));
-                startup.setTotalStartupFundingReceived(Double.parseDouble(fields[7]));
-                startup.setAverageFundingPerStartup(Double.parseDouble(fields[8]));
-                startup.setNumberOfFundingRounds(Integer.parseInt(fields[9]));
-                startup.setNumberOfStartupsWithForeignInvestment(Integer.parseInt(fields[10]));
-                startup.setAmountOfGovernmentGrantsOrSubsidiesReceived(Double.parseDouble(fields[11]));
-                startup.setNumberOfStartupIncubatorsOrAccelerators(Integer.parseInt(fields[12]));
-                startup.setNumberOfStartupsInIncubationPrograms(Integer.parseInt(fields[13]));
-                startup.setNumberOfMentorsOrAdvisorsInvolved(Integer.parseInt(fields[14]));
-                startup.setPublicPrivatePartnershipsInvolvingStartups(Integer.parseInt(fields[15]));
+                    // Parse headers and create a mapping from column name to index
+                    String[] headers = headerLine.split(",", -1);
+                    for (int i = 0; i < headers.length; i++) {
+                        String headerName = headers[i].trim().toLowerCase();
+                        headerMap.put(headerName, i);
+                    }
+                    
+                    // Read data rows
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (!line.trim().isEmpty()) {
+                            dataRows.add(line.split(",", -1));
+                        }
+                    }
+                }
+            }
+
+            // Process the data rows and update the startup
+            for (String[] fields : dataRows) {
+                // Use header-based mapping to set values
+                String revenueStr = getValueByHeader(fields, headerMap, "revenue");
+                if (revenueStr != null) {
+                    startup.setRevenue(parseDoubleSafeWithDefault(revenueStr, startup.getRevenue()));
+                }
+                
+                String annualRevenueStr = getValueByHeader(fields, headerMap, "annualrevenue");
+                if (annualRevenueStr != null) {
+                    startup.setAnnualRevenue(parseDoubleSafe(annualRevenueStr));
+                }
+                
+                String paidUpCapitalStr = getValueByHeader(fields, headerMap, "paidupcapital");
+                if (paidUpCapitalStr != null) {
+                    startup.setPaidUpCapital(parseDoubleSafe(paidUpCapitalStr));
+                }
+                
+                String numberOfActiveStartupsStr = getValueByHeader(fields, headerMap, "numberofactivestartups");
+                if (numberOfActiveStartupsStr != null) {
+                    startup.setNumberOfActiveStartups(parseIntSafe(numberOfActiveStartupsStr));
+                }
+                
+                String numberOfNewStartupsThisYearStr = getValueByHeader(fields, headerMap, "numberofnewstartupsthisyear");
+                if (numberOfNewStartupsThisYearStr != null) {
+                    startup.setNumberOfNewStartupsThisYear(parseIntSafe(numberOfNewStartupsThisYearStr));
+                }
+                
+                String averageStartupGrowthRateStr = getValueByHeader(fields, headerMap, "averagestartupgrowthrate");
+                if (averageStartupGrowthRateStr != null) {
+                    startup.setAverageStartupGrowthRate(parseDoubleSafe(averageStartupGrowthRateStr));
+                }
+                
+                String startupSurvivalRateStr = getValueByHeader(fields, headerMap, "startupsurvivalrate");
+                if (startupSurvivalRateStr != null) {
+                    startup.setStartupSurvivalRate(parseDoubleSafe(startupSurvivalRateStr));
+                }
+                
+                String totalStartupFundingReceivedStr = getValueByHeader(fields, headerMap, "totalstartupfundingreceived");
+                if (totalStartupFundingReceivedStr != null) {
+                    startup.setTotalStartupFundingReceived(parseDoubleSafe(totalStartupFundingReceivedStr));
+                }
+                
+                String averageFundingPerStartupStr = getValueByHeader(fields, headerMap, "averagefundingperstartup");
+                if (averageFundingPerStartupStr != null) {
+                    startup.setAverageFundingPerStartup(parseDoubleSafe(averageFundingPerStartupStr));
+                }
+                
+                String numberOfFundingRoundsStr = getValueByHeader(fields, headerMap, "numberoffundingrounds");
+                if (numberOfFundingRoundsStr != null) {
+                    startup.setNumberOfFundingRounds(parseIntSafe(numberOfFundingRoundsStr));
+                }
+                
+                String numberOfStartupsWithForeignInvestmentStr = getValueByHeader(fields, headerMap, "numberofstartupswithforeigninvestment");
+                if (numberOfStartupsWithForeignInvestmentStr != null) {
+                    startup.setNumberOfStartupsWithForeignInvestment(parseIntSafe(numberOfStartupsWithForeignInvestmentStr));
+                }
+                
+                String amountOfGovernmentGrantsOrSubsidiesReceivedStr = getValueByHeader(fields, headerMap, "amountofgovernmentgrantsorsubsidiesreceived");
+                if (amountOfGovernmentGrantsOrSubsidiesReceivedStr != null) {
+                    startup.setAmountOfGovernmentGrantsOrSubsidiesReceived(parseDoubleSafe(amountOfGovernmentGrantsOrSubsidiesReceivedStr));
+                }
+                
+                String numberOfStartupIncubatorsOrAcceleratorsStr = getValueByHeader(fields, headerMap, "numberofstartupincubatorsoraccelerators");
+                if (numberOfStartupIncubatorsOrAcceleratorsStr != null) {
+                    startup.setNumberOfStartupIncubatorsOrAccelerators(parseIntSafe(numberOfStartupIncubatorsOrAcceleratorsStr));
+                }
+                
+                String numberOfStartupsInIncubationProgramsStr = getValueByHeader(fields, headerMap, "numberofstartupsinincubationprograms");
+                if (numberOfStartupsInIncubationProgramsStr != null) {
+                    startup.setNumberOfStartupsInIncubationPrograms(parseIntSafe(numberOfStartupsInIncubationProgramsStr));
+                }
+                
+                String numberOfMentorsOrAdvisorsInvolvedStr = getValueByHeader(fields, headerMap, "numberofmentorsoradvisorsinvolved");
+                if (numberOfMentorsOrAdvisorsInvolvedStr != null) {
+                    startup.setNumberOfMentorsOrAdvisorsInvolved(parseIntSafe(numberOfMentorsOrAdvisorsInvolvedStr));
+                }
+                
+                String publicPrivatePartnershipsInvolvingStartupsStr = getValueByHeader(fields, headerMap, "publicprivatepartnershipsinvolvingstartups");
+                if (publicPrivatePartnershipsInvolvingStartupsStr != null) {
+                    startup.setPublicPrivatePartnershipsInvolvingStartups(parseIntSafe(publicPrivatePartnershipsInvolvingStartupsStr));
+                }
             }
 
             startupService.updateStartup(startupId, startup);
-            return ResponseEntity.ok("CSV file processed and data updated successfully.");
+            return ResponseEntity.ok("File processed and data updated successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error processing the file: " + e.getMessage());
         }
@@ -481,30 +610,90 @@ public class StartupController {
     @PostMapping("/upload-startups")
     public ResponseEntity<?> uploadStartupsCsv(@RequestParam("file") MultipartFile file) {
         String fileName = file.getOriginalFilename();
-        if (file.isEmpty() || fileName == null || !fileName.toLowerCase().endsWith(".csv")) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Please upload a valid CSV file."));
+        if (file.isEmpty() || fileName == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Please upload a valid file."));
+        }
+        
+        boolean isCsv = fileName.toLowerCase().endsWith(".csv");
+        boolean isExcel = fileName.toLowerCase().endsWith(".xlsx");
+        
+        if (!isCsv && !isExcel) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Please upload a valid CSV or XLSX file."));
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            String headerLine = reader.readLine();
-            if (headerLine == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "CSV file is empty."));
-            }
-
-            logger.info("Processing CSV upload with header: {}", headerLine);
-
-            // Parse headers and create a mapping from column name to index
-            String[] headers = headerLine.split(",", -1);
+        try {
             Map<String, Integer> headerMap = new HashMap<>();
-            for (int i = 0; i < headers.length; i++) {
-                String headerName = headers[i].trim().toLowerCase();
-                headerMap.put(headerName, i);
-                logger.debug("Header[{}]: '{}'", i, headerName);
+            List<String[]> dataRows = new ArrayList<>();
+            
+            if (isExcel) {
+                // Process Excel file
+                try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+                    Sheet sheet = workbook.getSheetAt(0);
+                    if (sheet.getPhysicalNumberOfRows() == 0) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "Excel file is empty."));
+                    }
+                    
+                    // Read header row
+                    Row headerRow = sheet.getRow(0);
+                    if (headerRow == null) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "Excel file has no header row."));
+                    }
+                    
+                    logger.info("Processing Excel upload");
+                    
+                    // Build header map
+                    for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+                        Cell cell = headerRow.getCell(i);
+                        if (cell != null) {
+                            String headerName = getCellValueAsString(cell).trim().toLowerCase();
+                            headerMap.put(headerName, i);
+                            logger.debug("Header[{}]: '{}'", i, headerName);
+                        }
+                    }
+                    
+                    // Read data rows
+                    for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                        Row row = sheet.getRow(i);
+                        if (row != null) {
+                            String[] rowData = new String[headerRow.getLastCellNum()];
+                            for (int j = 0; j < headerRow.getLastCellNum(); j++) {
+                                Cell cell = row.getCell(j);
+                                rowData[j] = cell != null ? getCellValueAsString(cell) : "";
+                            }
+                            dataRows.add(rowData);
+                        }
+                    }
+                }
+            } else {
+                // Process CSV file
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+                    String headerLine = reader.readLine();
+                    if (headerLine == null) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "CSV file is empty."));
+                    }
+
+                    logger.info("Processing CSV upload with header: {}", headerLine);
+
+                    // Parse headers and create a mapping from column name to index
+                    String[] headers = headerLine.split(",", -1);
+                    for (int i = 0; i < headers.length; i++) {
+                        String headerName = headers[i].trim().toLowerCase();
+                        headerMap.put(headerName, i);
+                        logger.debug("Header[{}]: '{}'", i, headerName);
+                    }
+                    
+                    // Read data rows
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (!line.trim().isEmpty()) {
+                            dataRows.add(line.split(",", -1));
+                        }
+                    }
+                }
             }
 
             List<Startup> startups = new ArrayList<>();
             List<String> errors = new ArrayList<>();
-            String line;
             int lineNumber = 1;
             int successCount = 0;
             int skipCount = 0;
@@ -516,20 +705,15 @@ public class StartupController {
             }
             User loggedInUser = (User) authentication.getPrincipal();
 
-            while ((line = reader.readLine()) != null) {
+            for (String[] fields : dataRows) {
                 lineNumber++;
-                
-                // Skip empty lines
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
-
-                String[] fields = line.split(",", -1); // -1 to preserve trailing empty strings
 
                 // Log raw line for first few records to debug
                 if (lineNumber <= 3) {
+                    String rawLine = String.join(",", fields);
+                    String preview = rawLine.length() > 200 ? rawLine.substring(0, 200) + "..." : rawLine;
                     logger.info("Line {}: Total fields={}, Raw line preview: {}", 
-                        lineNumber, fields.length, line.length() > 200 ? line.substring(0, 200) + "..." : line);
+                        lineNumber, fields.length, preview);
                 }
 
                 try {
@@ -795,6 +979,42 @@ public class StartupController {
         // Handle common boolean representations
         String lowerValue = value.toLowerCase().trim();
         return lowerValue.equals("true") || lowerValue.equals("1") || lowerValue.equals("yes");
+    }
+
+    /**
+     * Get cell value as string from Excel cell, handling different cell types.
+     */
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+        
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue().toString();
+                }
+                // Format numeric values to avoid scientific notation
+                double numericValue = cell.getNumericCellValue();
+                if (numericValue == (long) numericValue) {
+                    return String.valueOf((long) numericValue);
+                }
+                return String.valueOf(numericValue);
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                try {
+                    return String.valueOf(cell.getNumericCellValue());
+                } catch (IllegalStateException e) {
+                    return cell.getStringCellValue();
+                }
+            case BLANK:
+                return "";
+            default:
+                return "";
+        }
     }
 
 
