@@ -67,7 +67,40 @@ public class StartupService {
         logger.info("Saving startup: {}", startup.getCompanyName());
 
         startup.setStatus("In Review");
+        startup.setIsDraft(false);
         return startupRepository.save(startup);
+    }
+
+    @Transactional
+    public Startup saveDraft(Startup startup) {
+        logger.info("Saving draft: {}", startup.getCompanyName());
+
+        startup.setIsDraft(true);
+        startup.setStatus("Draft");
+        startup.setEmailVerified(false);
+        return startupRepository.save(startup);
+    }
+
+    @Transactional
+    public Startup submitDraft(Long draftId, Integer userId) {
+        logger.info("Submitting draft with ID: {}", draftId);
+        
+        Startup draft = startupRepository.findById(draftId)
+                .orElseThrow(() -> new RuntimeException("Draft not found with id: " + draftId));
+        
+        // Verify the draft belongs to the user
+        if (!draft.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Unauthorized: Draft does not belong to user");
+        }
+        
+        // Verify it's actually a draft
+        if (!draft.getIsDraft()) {
+            throw new RuntimeException("Startup is not a draft");
+        }
+        
+        draft.setIsDraft(false);
+        draft.setStatus("In Review");
+        return startupRepository.save(draft);
     }
 
     public List<Startup> getAllStartups() {
@@ -147,6 +180,10 @@ public class StartupService {
                     startup.setOtherRegistrationAgency(updatedStartup.getOtherRegistrationAgency());
                     startup.setBusinessLicenseNumber(updatedStartup.getBusinessLicenseNumber());
                     startup.setTin(updatedStartup.getTin());
+
+                    if (updatedStartup.getIsDraft() != null) {
+                        startup.setIsDraft(updatedStartup.getIsDraft());
+                    }
 
                     if (updatedStartup.getPhoto() != null) {
                         startup.setPhoto(updatedStartup.getPhoto());
@@ -270,6 +307,138 @@ public class StartupService {
         }
         User loggedInUser = (User) authentication.getPrincipal();
         return startupRepository.findByUser_Id(loggedInUser.getId());
+    }
+
+    public List<Startup> getDraftsByLoggedInUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("User not authenticated");
+        }
+        User loggedInUser = (User) authentication.getPrincipal();
+        logger.info("Fetching drafts for user ID: {}", loggedInUser.getId());
+        return startupRepository.findByUser_IdAndIsDraftTrue(loggedInUser.getId());
+    }
+
+    public Startup getDraftById(Long id, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("User not authenticated");
+        }
+        User loggedInUser = (User) authentication.getPrincipal();
+        
+        Startup startup = startupRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Draft not found with id: " + id));
+        
+        // Verify it's a draft
+        if (!startup.getIsDraft()) {
+            throw new RuntimeException("Startup with id " + id + " is not a draft");
+        }
+        
+        // Verify it belongs to the logged-in user
+        if (!startup.getUser().getId().equals(loggedInUser.getId())) {
+            throw new RuntimeException("Unauthorized: Draft does not belong to user");
+        }
+        
+        logger.info("Fetched draft with ID: {} for user ID: {}", id, loggedInUser.getId());
+        return startup;
+    }
+
+    @Transactional
+    public Startup updateDraft(Long id, Startup updatedDraft, Integer userId) {
+        logger.info("Updating draft with ID: {}", id);
+        
+        Startup existingDraft = startupRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Draft not found with id: " + id));
+        
+        // Verify the draft belongs to the user
+        if (!existingDraft.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Unauthorized: Draft does not belong to user");
+        }
+        
+        // Verify it's actually a draft
+        if (!existingDraft.getIsDraft()) {
+            throw new RuntimeException("Startup with id " + id + " is not a draft");
+        }
+        
+        // Update all fields while maintaining draft status
+        existingDraft.setCompanyName(updatedDraft.getCompanyName());
+        existingDraft.setCompanyDescription(updatedDraft.getCompanyDescription());
+        existingDraft.setFoundedDate(updatedDraft.getFoundedDate());
+        existingDraft.setTypeOfCompany(updatedDraft.getTypeOfCompany());
+        existingDraft.setNumberOfEmployees(updatedDraft.getNumberOfEmployees());
+        existingDraft.setPhoneNumber(updatedDraft.getPhoneNumber());
+        existingDraft.setContactEmail(updatedDraft.getContactEmail());
+        existingDraft.setStreetAddress(updatedDraft.getStreetAddress());
+        existingDraft.setCity(updatedDraft.getCity());
+        existingDraft.setProvince(updatedDraft.getProvince());
+        existingDraft.setRegion(updatedDraft.getRegion());
+        existingDraft.setBarangay(updatedDraft.getBarangay());
+        existingDraft.setPostalCode(updatedDraft.getPostalCode());
+        existingDraft.setIndustry(updatedDraft.getIndustry());
+        existingDraft.setWebsite(updatedDraft.getWebsite());
+        existingDraft.setFacebook(updatedDraft.getFacebook());
+        existingDraft.setTwitter(updatedDraft.getTwitter());
+        existingDraft.setInstagram(updatedDraft.getInstagram());
+        existingDraft.setLinkedIn(updatedDraft.getLinkedIn());
+        existingDraft.setLocationLat(updatedDraft.getLocationLat());
+        existingDraft.setLocationLng(updatedDraft.getLocationLng());
+        existingDraft.setLocationName(updatedDraft.getLocationName());
+        existingDraft.setStartupCode(updatedDraft.getStartupCode());
+        existingDraft.setRevenue(updatedDraft.getRevenue());
+        existingDraft.setAnnualRevenue(updatedDraft.getAnnualRevenue());
+        existingDraft.setPaidUpCapital(updatedDraft.getPaidUpCapital());
+        existingDraft.setFundingStage(updatedDraft.getFundingStage());
+        existingDraft.setBusinessActivity(updatedDraft.getBusinessActivity());
+        existingDraft.setOperatingHours(updatedDraft.getOperatingHours());
+        existingDraft.setNumberOfActiveStartups(updatedDraft.getNumberOfActiveStartups());
+        existingDraft.setNumberOfNewStartupsThisYear(updatedDraft.getNumberOfNewStartupsThisYear());
+        existingDraft.setAverageStartupGrowthRate(updatedDraft.getAverageStartupGrowthRate());
+        existingDraft.setStartupSurvivalRate(updatedDraft.getStartupSurvivalRate());
+        existingDraft.setTotalStartupFundingReceived(updatedDraft.getTotalStartupFundingReceived());
+        existingDraft.setAverageFundingPerStartup(updatedDraft.getAverageFundingPerStartup());
+        existingDraft.setNumberOfFundingRounds(updatedDraft.getNumberOfFundingRounds());
+        existingDraft.setNumberOfStartupsWithForeignInvestment(updatedDraft.getNumberOfStartupsWithForeignInvestment());
+        existingDraft.setAmountOfGovernmentGrantsOrSubsidiesReceived(updatedDraft.getAmountOfGovernmentGrantsOrSubsidiesReceived());
+        existingDraft.setNumberOfStartupIncubatorsOrAccelerators(updatedDraft.getNumberOfStartupIncubatorsOrAccelerators());
+        existingDraft.setNumberOfStartupsInIncubationPrograms(updatedDraft.getNumberOfStartupsInIncubationPrograms());
+        existingDraft.setNumberOfMentorsOrAdvisorsInvolved(updatedDraft.getNumberOfMentorsOrAdvisorsInvolved());
+        existingDraft.setPublicPrivatePartnershipsInvolvingStartups(updatedDraft.getPublicPrivatePartnershipsInvolvingStartups());
+        existingDraft.setIsGovernmentRegistered(updatedDraft.getIsGovernmentRegistered());
+        existingDraft.setRegistrationAgency(updatedDraft.getRegistrationAgency());
+        existingDraft.setRegistrationNumber(updatedDraft.getRegistrationNumber());
+        existingDraft.setRegistrationDate(updatedDraft.getRegistrationDate());
+        existingDraft.setOtherRegistrationAgency(updatedDraft.getOtherRegistrationAgency());
+        existingDraft.setBusinessLicenseNumber(updatedDraft.getBusinessLicenseNumber());
+        existingDraft.setTin(updatedDraft.getTin());
+        
+        // Keep draft status and draft flag
+        existingDraft.setIsDraft(true);
+        existingDraft.setStatus("Draft");
+        
+        Startup saved = startupRepository.save(existingDraft);
+        logger.info("Successfully updated draft with ID: {}", id);
+        return saved;
+    }
+
+    @Transactional
+    public void deleteDraft(Long id, Integer userId) {
+        logger.info("Deleting draft with ID: {}", id);
+        
+        Startup draft = startupRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Draft not found with id: " + id));
+        
+        // Verify the draft belongs to the user
+        if (!draft.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Unauthorized: Draft does not belong to user");
+        }
+        
+        // Verify it's actually a draft
+        if (!draft.getIsDraft()) {
+            throw new RuntimeException("Startup with id " + id + " is not a draft. Cannot delete non-draft startups through this endpoint.");
+        }
+        
+        startupRepository.delete(draft);
+        logger.info("Successfully deleted draft with ID: {}", id);
     }
 
     public void sendVerificationEmail(Long startupId, String email) {
