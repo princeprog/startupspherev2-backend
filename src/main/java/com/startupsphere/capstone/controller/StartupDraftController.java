@@ -6,6 +6,7 @@ import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.security.CurrentUser;
 import com.startupsphere.capstone.service.StartupDraftService;
 import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,21 +23,24 @@ public class StartupDraftController {
     @PostMapping
     public ResponseEntity<Void> save(@CurrentUser User user, @Valid @RequestBody DraftRequest req) {
         if (user == null) return ResponseEntity.status(401).build();
-        service.saveDraft(user.getId(), req);  // ← user.getId() is Integer
+        service.saveDraft(user.getId(), req);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping
     public ResponseEntity<DraftResponse> get(@CurrentUser User user) {
         if (user == null) return ResponseEntity.status(401).build();
-        DraftResponse draft = service.getDraft(user.getId());  // ← Integer
-        return draft != null ? ResponseEntity.ok(draft) : ResponseEntity.noContent().build();
+
+        DraftResponse draft = service.getDraft(user.getId());
+        return draft != null 
+            ? ResponseEntity.ok(draft) 
+            : ResponseEntity.noContent().build();
     }
 
     @DeleteMapping
     public ResponseEntity<Void> delete(@CurrentUser User user) {
         if (user == null) return ResponseEntity.status(401).build();
-        service.deleteDraft(user.getId());  // ← Integer
+        service.deleteDraft(user.getId());
         return ResponseEntity.ok().build();
     }
 }
