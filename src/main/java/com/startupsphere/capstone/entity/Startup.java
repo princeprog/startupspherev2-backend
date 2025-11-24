@@ -126,6 +126,9 @@ public class Startup {
     @Column(name = "tin")
     private String tin;
 
+    @Column(name = "is_draft", nullable = false)
+    private Boolean isDraft = false;
+
     // Registration certificate as file (image, any extension)
     @Lob
     @Column(name = "registration_certificate", columnDefinition = "LONGBLOB")
@@ -708,6 +711,14 @@ public class Startup {
 
     public void setRegistrationCertificate(byte[] registrationCertificate) {
         this.registrationCertificate = registrationCertificate;
+    }
+
+    public Boolean getIsDraft() {
+        return isDraft;
+    }
+
+    public void setIsDraft(Boolean isDraft) {
+        this.isDraft = isDraft;
     }
 
     public List<StartupStakeholder> getStartupStakeholders() {

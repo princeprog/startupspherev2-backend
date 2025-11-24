@@ -15,6 +15,10 @@ public interface StartupRepository extends JpaRepository<Startup, Long> {
 
     List<Startup> findByUser_Id(Integer userId);
 
+    List<Startup> findByUser_IdAndIsDraftFalse(Integer userId);
+
+    List<Startup> findByUser_IdAndIsDraftTrue(Integer userId);
+
     Optional<Startup> findByContactEmailAndVerificationCode(String contactEmail, String verificationCode);
 
     boolean existsByContactEmailAndEmailVerifiedTrue(String contactEmail);

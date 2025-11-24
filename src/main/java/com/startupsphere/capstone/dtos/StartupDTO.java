@@ -37,6 +37,7 @@ public class StartupDTO {
     private String fundingStage;
     private Integer viewsCount;
     private Boolean emailVerified;
+    private Boolean isDraft;
     private LocalDateTime createdAt;
     private LocalDateTime lastUpdated;
 
@@ -80,6 +81,7 @@ public class StartupDTO {
         this.fundingStage = startup.getFundingStage();
         this.viewsCount = startup.getViewsCount();
         this.emailVerified = startup.getEmailVerified();
+        this.isDraft = startup.getIsDraft();
         this.createdAt = startup.getCreatedAt();
         this.lastUpdated = startup.getLastUpdated();
         if (includeStakeholders) {
@@ -353,5 +355,13 @@ public class StartupDTO {
 
     public void setAssociatedStakeholders(List<StakeholderDTO> associatedStakeholders) {
         this.associatedStakeholders = associatedStakeholders;
+    }
+
+    public Boolean getIsDraft() {
+        return isDraft;
+    }
+
+    public void setIsDraft(Boolean isDraft) {
+        this.isDraft = isDraft;
     }
 }

@@ -73,6 +73,32 @@ public class StartupController {
         }
     }
 
+    @PostMapping("/draft")
+    @Transactional
+    public ResponseEntity<Startup> saveDraft(@RequestBody Startup startup) {
+        logger.info("Attempting to save startup draft: {}", startup.getCompanyName());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
+            logger.warn("Unauthorized attempt to save draft");
+            return ResponseEntity.status(401).body(null);
+        }
+
+        User loggedInUser = (User) authentication.getPrincipal();
+        startup.setUser(loggedInUser);
+        startup.setIsDraft(true);
+        startup.setStatus("Draft");
+
+        try {
+            Startup savedDraft = startupService.saveDraft(startup);
+            logger.info("Draft saved successfully with ID: {}", savedDraft.getId());
+            return ResponseEntity.ok(savedDraft);
+        } catch (Exception e) {
+            logger.error("Error saving draft: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
     @GetMapping
     public ResponseEntity<List<Startup>> getAllStartups() {
         List<Startup> startups = startupService.getAllStartups();
@@ -366,6 +392,95 @@ public class StartupController {
             return ResponseEntity.ok(startups);
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).build();
+        }
+    }
+
+    @GetMapping("/my-drafts")
+    public ResponseEntity<List<Startup>> getDraftsByLoggedInUser() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            List<Startup> drafts = startupService.getDraftsByLoggedInUser(authentication);
+            return ResponseEntity.ok(drafts);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @GetMapping("/draft/{id:[0-9]+}")
+    public ResponseEntity<Startup> getDraftById(@PathVariable Long id) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Startup draft = startupService.getDraftById(id, authentication);
+            return ResponseEntity.ok(draft);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).build();
+        }
+    }
+
+    @PutMapping("/draft/{id:[0-9]+}")
+    @Transactional
+    public ResponseEntity<Startup> updateDraft(@PathVariable Long id, @RequestBody Startup updatedDraft) {
+        logger.info("Attempting to update draft with ID: {}", id);
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()
+                    || authentication.getPrincipal().equals("anonymousUser")) {
+                return ResponseEntity.status(401).build();
+            }
+
+            User loggedInUser = (User) authentication.getPrincipal();
+            Startup updated = startupService.updateDraft(id, updatedDraft, loggedInUser.getId());
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            logger.error("Error updating draft: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/draft/{id:[0-9]+}")
+    @Transactional
+    public ResponseEntity<Void> deleteDraft(@PathVariable Long id) {
+        logger.info("Attempting to delete draft with ID: {}", id);
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()
+                    || authentication.getPrincipal().equals("anonymousUser")) {
+                return ResponseEntity.status(401).build();
+            }
+
+            User loggedInUser = (User) authentication.getPrincipal();
+            startupService.deleteDraft(id, loggedInUser.getId());
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            logger.error("Error deleting draft: {}", e.getMessage());
+            return ResponseEntity.status(404).build();
+        }
+    }
+
+    @PutMapping("/draft/{id:[0-9]+}/submit")
+    @Transactional
+    public ResponseEntity<Startup> submitDraft(@PathVariable Long id) {
+        logger.info("Attempting to submit draft with ID: {}", id);
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()
+                    || authentication.getPrincipal().equals("anonymousUser")) {
+                return ResponseEntity.status(401).build();
+            }
+
+            User loggedInUser = (User) authentication.getPrincipal();
+            Startup submittedStartup = startupService.submitDraft(id, loggedInUser.getId());
+            
+            notificationService.createStartupApprovalNotification(
+                    submittedStartup,
+                    "in review",
+                    "Startup application submitted for review."
+            );
+            
+            return ResponseEntity.ok(submittedStartup);
+        } catch (RuntimeException e) {
+            logger.error("Error submitting draft: {}", e.getMessage(), e);
+            return ResponseEntity.status(404).body(null);
         }
     }
 
