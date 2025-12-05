@@ -681,8 +681,8 @@ public class StartupController {
 
         byte[] file = optionalStartup.get().getRegistrationCertificate();
         return ResponseEntity.ok()
-                .header("Content-Type", "application/octet-stream")
-                .header("Content-Disposition", "attachment; filename=registration_certificate")
+                .header("Content-Type", "application/pdf")
+                .header("Content-Disposition", "attachment; filename=registration_certificate.pdf")
                 .body(file);
     }
 

@@ -23,7 +23,7 @@ public interface StartupRepository extends JpaRepository<Startup, Long> {
 
     boolean existsByContactEmailAndEmailVerifiedTrue(String contactEmail);
 
-    List<Startup> findByStatus(String status);
+    List<Startup> findByStatusAndIsDraftFalse(String status);
 
     @Query("SELECT s FROM Startup s WHERE s.emailVerified = true")
     List<Startup> findAllVerifiedEmailStartups();
@@ -32,6 +32,7 @@ public interface StartupRepository extends JpaRepository<Startup, Long> {
     List<Startup> findAllApprovedStartups();
 
     @Query("SELECT s FROM Startup s WHERE " +
+            "s.isDraft = false AND " +
             "(:industry IS NULL OR s.industry = :industry) AND " +
             "(:status IS NULL OR s.status = :status) AND " +
             "(:region IS NULL OR s.region = :region) AND " +
