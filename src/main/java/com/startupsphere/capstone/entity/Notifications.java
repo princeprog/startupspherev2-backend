@@ -7,6 +7,12 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
+@Table(name = "notifications", indexes = {
+    @Index(name = "idx_notif_user", columnList = "user_id"),
+    @Index(name = "idx_notif_startup", columnList = "startup_id"),
+    @Index(name = "idx_notif_viewed", columnList = "isViewed"),
+    @Index(name = "idx_notif_user_viewed", columnList = "user_id, isViewed")
+})
 public class Notifications {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

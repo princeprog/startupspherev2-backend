@@ -4,7 +4,11 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "bookmarks")
+@Table(name = "bookmarks", indexes = {
+    @Index(name = "idx_bookmark_user", columnList = "users"),
+    @Index(name = "idx_bookmark_startup", columnList = "startupId"),
+    @Index(name = "idx_bookmark_investor", columnList = "investorId")
+})
 public class Bookmarks {
 
     @Id

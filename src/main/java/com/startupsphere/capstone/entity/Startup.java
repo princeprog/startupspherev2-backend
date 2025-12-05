@@ -8,7 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "startups")
+@Table(name = "startups", indexes = {
+    @Index(name = "idx_user_id", columnList = "user_id"),
+    @Index(name = "idx_status", columnList = "status"),
+    @Index(name = "idx_industry", columnList = "industry"),
+    @Index(name = "idx_region", columnList = "region"),
+    @Index(name = "idx_is_draft", columnList = "is_draft"),
+    @Index(name = "idx_email_verified", columnList = "email_verified"),
+    @Index(name = "idx_company_name", columnList = "companyName"),
+    @Index(name = "idx_contact_email", columnList = "contactEmail"),
+    @Index(name = "idx_last_updated", columnList = "last_updated"),
+    @Index(name = "idx_created_at", columnList = "created_at"),
+    @Index(name = "idx_user_draft", columnList = "user_id, is_draft")
+})
 @JsonIgnoreProperties({"startupStakeholders", "likes", "bookmarks", "views", "notifications"})
 public class Startup {
 

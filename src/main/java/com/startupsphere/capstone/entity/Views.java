@@ -5,6 +5,10 @@ import java.time.Instant;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "views", indexes = {
+    @Index(name = "idx_view_user", columnList = "user_id"),
+    @Index(name = "idx_view_startup", columnList = "startup_id")
+})
 public class Views {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

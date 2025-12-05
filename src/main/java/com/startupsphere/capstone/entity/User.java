@@ -13,7 +13,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-@Table(name = "users")
+@Table(name = "users", indexes = {
+    @Index(name = "idx_user_email", columnList = "email")
+})
 @Entity
 public class User implements UserDetails {
 

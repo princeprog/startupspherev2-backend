@@ -296,8 +296,8 @@ public class StartupService {
     }
 
     public List<Startup> getAllSubmittedStartups() {
-        logger.info("Fetching all submitted startups");
-        return startupRepository.findByStatus("In Review");
+        logger.info("Fetching all submitted startups (non-drafts only)");
+        return startupRepository.findByStatusAndIsDraftFalse("In Review");
     }
 
     public List<Startup> getStartupsByLoggedInUser(Authentication authentication) {
