@@ -29,6 +29,11 @@ public class AuthenticationService {
     }
 
     public User signup(RegisterUserDto input) {
+        // Check if email already exists
+        if (userRepository.findByEmail(input.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+        
         String role = input.getRole() != null ? input.getRole() : "ROLE_USER"; // Default role is USER
     
         User user = new User()

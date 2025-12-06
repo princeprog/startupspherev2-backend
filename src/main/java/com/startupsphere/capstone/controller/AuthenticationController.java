@@ -32,9 +32,18 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
-        User registeredUser = authenticationService.signup(registerUserDto);
-        return ResponseEntity.ok(registeredUser);
+    public ResponseEntity<?> register(@RequestBody RegisterUserDto registerUserDto) {
+        try {
+            User registeredUser = authenticationService.signup(registerUserDto);
+            return ResponseEntity.ok(registeredUser);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("Email already exists")) {
+                return ResponseEntity.status(409)
+                        .body(java.util.Map.of("error", "Email already exists. Please use a different email address."));
+            }
+            return ResponseEntity.status(400)
+                    .body(java.util.Map.of("error", "Registration failed: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/login")
