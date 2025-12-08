@@ -56,7 +56,11 @@ public class Startup {
     private Integer viewsCount = 0;
 
     private String companyName;
+    
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String companyDescription;
+    
     private String foundedDate;
     private String typeOfCompany;
     private String numberOfEmployees;
