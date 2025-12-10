@@ -2,6 +2,8 @@ package com.startupsphere.capstone.service;
 
 import com.startupsphere.capstone.entity.Investor;
 import com.startupsphere.capstone.repository.InvestorRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +15,10 @@ public class InvestorService {
 
     public InvestorService(InvestorRepository investorRepository) {
         this.investorRepository = investorRepository;
+    }
+
+    public Page<Investor> getAllInvestors(Pageable pageable) {
+        return investorRepository.findAll(pageable);
     }
 
     public List<Investor> getAllInvestors() {

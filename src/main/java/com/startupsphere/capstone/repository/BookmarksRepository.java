@@ -11,14 +11,18 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface BookmarksRepository extends JpaRepository<Bookmarks, Long> {
+        Page<Bookmarks> findByUser(User user, Pageable pageable);
         List<Bookmarks> findByUser(User user);
 
+        Page<Bookmarks> findByStartup(Startup startup, Pageable pageable);
         List<Bookmarks> findByStartup(Startup startup);
 
         @Modifying

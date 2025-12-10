@@ -4,6 +4,8 @@ import com.startupsphere.capstone.dtos.ReportDto;
 import com.startupsphere.capstone.entity.Report;
 import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.repository.ReportRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,6 +28,10 @@ public class ReportService {
         report.setUserId(user);
 
         return reportRepository.save(report);
+    }
+
+    public Page<Report> getAllReports(Pageable pageable) {
+        return reportRepository.findAll(pageable);
     }
 
     public List<Report> getAllReports() {

@@ -13,6 +13,10 @@ import io.jsonwebtoken.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -100,14 +104,27 @@ public class StartupController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Startup>> getAllStartups() {
-        List<Startup> startups = startupService.getAllStartups();
+    public ResponseEntity<Page<Startup>> getAllStartups(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Startup> startups = startupService.getAllStartups(pageable);
         return ResponseEntity.ok(startups);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Startup>> searchStartups(@RequestParam String query) {
-        List<Startup> startups = startupService.searchStartups(query);
+    public ResponseEntity<Page<Startup>> searchStartups(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "companyName") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Startup> startups = startupService.searchStartups(query, pageable);
         return ResponseEntity.ok(startups);
     }
 
@@ -119,10 +136,16 @@ public class StartupController {
     }
 
     @GetMapping("/submitted")
-    public ResponseEntity<List<Startup>> getAllSubmittedStartups() {
+    public ResponseEntity<Page<Startup>> getAllSubmittedStartups(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
         try {
-            logger.info("Fetching all submitted startups");
-            List<Startup> startups = startupService.getAllSubmittedStartups();
+            logger.info("Fetching paginated submitted startups");
+            Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+            Pageable pageable = PageRequest.of(page, size, sort);
+            Page<Startup> startups = startupService.getAllSubmittedStartups(pageable);
             return ResponseEntity.ok(startups);
         } catch (Exception e) {
             logger.error("Error fetching submitted startups: {}", e.getMessage(), e);
@@ -583,8 +606,14 @@ public class StartupController {
     }
 
     @GetMapping("/email-verified")
-    public ResponseEntity<List<Startup>> getAllEmailVerifiedStartups() {
-        List<Startup> startups = startupService.getAllEmailVerifiedStartups();
+    public ResponseEntity<Page<Startup>> getAllEmailVerifiedStartups(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Startup> startups = startupService.getAllEmailVerifiedStartups(pageable);
         return ResponseEntity.ok(startups);
     }
 
@@ -609,8 +638,14 @@ public class StartupController {
     }
 
     @GetMapping("/approved")
-    public ResponseEntity<List<Startup>> getAllApprovedStartups() {
-        List<Startup> startups = startupService.getAllApprovedStartups();
+    public ResponseEntity<Page<Startup>> getAllApprovedStartups(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Startup> startups = startupService.getAllApprovedStartups(pageable);
         return ResponseEntity.ok(startups);
     }
 
@@ -687,22 +722,29 @@ public class StartupController {
     }
 
     @GetMapping("/review")
-    public ResponseEntity<List<Startup>> getStartupsWithFilters(
+    public ResponseEntity<Page<Startup>> getStartupsWithFilters(
             @RequestParam(required = false) String industry,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String region,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String startDate,
-            @RequestParam(required = false) String endDate) {
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
 
         try {
-            List<Startup> startups = startupService.getStartupsWithFilters(
+            Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+            Pageable pageable = PageRequest.of(page, size, sort);
+            Page<Startup> startups = startupService.getStartupsWithFilters(
                     industry,
                     status,
                     region,
                     search,
                     startDate,
-                    endDate
+                    endDate,
+                    pageable
             );
             return ResponseEntity.ok(startups);
         } catch (Exception e) {

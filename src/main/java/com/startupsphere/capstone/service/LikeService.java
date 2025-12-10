@@ -4,6 +4,8 @@ import com.startupsphere.capstone.entity.Like;
 import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.repository.LikeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,10 @@ public class LikeService {
 
         likeRepository.save(like);
         return "Like added";
+    }
+
+    public Page<Like> getAllLikes(Pageable pageable) {
+        return likeRepository.findAll(pageable);
     }
 
     public List<Like> getAllLikes() {

@@ -4,6 +4,10 @@ import com.startupsphere.capstone.entity.Startup;
 import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.service.StartupRankingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +30,9 @@ public class StartupRankingController {
     @GetMapping
     public ResponseEntity<Map<String, Object>> getRankedStartups(
             @RequestParam(required = false) String industry,
-            @RequestParam(required = false, defaultValue = "overall") String metric) {
+            @RequestParam(required = false, defaultValue = "overall") String metric,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
         List<Startup> allStartups = startupRepository.findAll();
         List<Startup> approvedStartups = allStartups.stream()
@@ -40,10 +46,12 @@ public class StartupRankingController {
             rankedStartups = rankingService.rankStartupsByMetric(approvedStartups, metric);
         }
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("totalCount", rankedStartups.size());
+        // Apply pagination
+        int start = page * size;
+        int end = Math.min(start + size, rankedStartups.size());
+        List<Startup> paginatedStartups = rankedStartups.subList(start, end);
 
-        List<Map<String, Object>> startupData = rankedStartups.stream().map(startup -> {
+        List<Map<String, Object>> startupData = paginatedStartups.stream().map(startup -> {
             Map<String, Object> data = new HashMap<>();
             data.put("id", startup.getId());
             data.put("companyName", startup.getCompanyName());
@@ -57,7 +65,17 @@ public class StartupRankingController {
             return data;
         }).collect(Collectors.toList());
 
-        response.put("rankings", startupData);
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", startupData);
+        response.put("totalElements", rankedStartups.size());
+        response.put("totalPages", (int) Math.ceil((double) rankedStartups.size() / size));
+        response.put("size", size);
+        response.put("number", page);
+        response.put("numberOfElements", startupData.size());
+        response.put("first", page == 0);
+        response.put("last", end >= rankedStartups.size());
+        response.put("empty", startupData.isEmpty());
+        
         return ResponseEntity.ok(response);
     }
 
@@ -96,9 +114,11 @@ public class StartupRankingController {
     }
 
     @GetMapping("/top")
-    public ResponseEntity<List<Map<String, Object>>> getTopStartups(
+    public ResponseEntity<Map<String, Object>> getTopStartups(
             @RequestParam(required = false, defaultValue = "10") Integer limit,
-            @RequestParam(required = false) String industry) {
+            @RequestParam(required = false) String industry,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
         List<Startup> allStartups = startupRepository.findAll();
         List<Startup> approvedStartups = allStartups.stream()
@@ -112,9 +132,16 @@ public class StartupRankingController {
             rankedStartups = rankingService.rankStartups(approvedStartups);
         }
 
+        // Apply limit first, then pagination
         rankedStartups = rankedStartups.stream().limit(limit).collect(Collectors.toList());
+        
+        int start = page * size;
+        int end = Math.min(start + size, rankedStartups.size());
+        List<Startup> paginatedStartups = start < rankedStartups.size() 
+            ? rankedStartups.subList(start, end) 
+            : Collections.emptyList();
 
-        List<Map<String, Object>> response = rankedStartups.stream().map(startup -> {
+        List<Map<String, Object>> startupData = paginatedStartups.stream().map(startup -> {
             Map<String, Object> data = new HashMap<>();
             data.put("id", startup.getId());
             data.put("companyName", startup.getCompanyName());
@@ -124,6 +151,17 @@ public class StartupRankingController {
             data.put("totalFunding", startup.getTotalStartupFundingReceived());
             return data;
         }).collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", startupData);
+        response.put("totalElements", rankedStartups.size());
+        response.put("totalPages", (int) Math.ceil((double) rankedStartups.size() / size));
+        response.put("size", size);
+        response.put("number", page);
+        response.put("numberOfElements", startupData.size());
+        response.put("first", page == 0);
+        response.put("last", end >= rankedStartups.size());
+        response.put("empty", startupData.isEmpty());
 
         return ResponseEntity.ok(response);
     }

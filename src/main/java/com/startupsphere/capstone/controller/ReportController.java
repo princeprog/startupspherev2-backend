@@ -5,6 +5,10 @@ import com.startupsphere.capstone.entity.Report;
 import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.service.ReportService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,8 +36,14 @@ public class ReportController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Report>> getAllReports() {
-        return ResponseEntity.ok(reportService.getAllReports());
+    public ResponseEntity<Page<Report>> getAllReports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "timestamp") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(reportService.getAllReports(pageable));
     }
 
     @PutMapping("/{id}")

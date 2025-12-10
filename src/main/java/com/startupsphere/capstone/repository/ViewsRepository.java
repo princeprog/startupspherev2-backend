@@ -8,6 +8,8 @@ import jakarta.transaction.Transactional;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Repository;
 public interface ViewsRepository extends JpaRepository<Views, Long> {
         boolean existsByUserAndStartup(User user, Startup startup);
 
+        Page<Views> findByStartup(Startup startup, Pageable pageable);
         List<Views> findByStartup(Startup startup);
 
         @Modifying

@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 @Service
 public class StartupService {
 
@@ -101,6 +104,10 @@ public class StartupService {
         draft.setIsDraft(false);
         draft.setStatus("In Review");
         return startupRepository.save(draft);
+    }
+
+    public Page<Startup> getAllStartups(Pageable pageable) {
+        return startupRepository.findAll(pageable);
     }
 
     public List<Startup> getAllStartups() {
@@ -279,6 +286,10 @@ public class StartupService {
         }
     }
 
+    public Page<Startup> searchStartups(String query, Pageable pageable) {
+        return startupRepository.findByCompanyNameContainingIgnoreCase(query, pageable);
+    }
+
     public List<Startup> searchStartups(String query) {
         return startupRepository.findByCompanyNameContainingIgnoreCase(query);
     }
@@ -293,6 +304,11 @@ public class StartupService {
                 .stream()
                 .map(Startup::getId)
                 .toList();
+    }
+
+    public Page<Startup> getAllSubmittedStartups(Pageable pageable) {
+        logger.info("Fetching paginated submitted startups (non-drafts only)");
+        return startupRepository.findByStatusAndIsDraftFalse("In Review", pageable);
     }
 
     public List<Startup> getAllSubmittedStartups() {
@@ -508,6 +524,10 @@ public class StartupService {
         logger.info("Email verified for startup ID: {}", startupId);
     }
 
+    public Page<Startup> getAllEmailVerifiedStartups(Pageable pageable) {
+        return startupRepository.findAllVerifiedEmailStartups(pageable);
+    }
+
     public List<Startup> getAllEmailVerifiedStartups() {
         return startupRepository.findAllVerifiedEmailStartups();
     }
@@ -528,6 +548,10 @@ public class StartupService {
 
         startup.setStatus("Rejected");
         return startupRepository.save(startup);
+    }
+
+    public Page<Startup> getAllApprovedStartups(Pageable pageable) {
+        return startupRepository.findAllApprovedStartups(pageable);
     }
 
     public List<Startup> getAllApprovedStartups() {
@@ -582,6 +606,31 @@ public class StartupService {
             logger.error("IOException while sending reminder email to {}: {}", toEmail, e.getMessage(), e);
             throw new RuntimeException("Failed to send reminder email: " + e.getMessage(), e);
         }
+    }
+
+    public Page<Startup> getStartupsWithFilters(
+            String industry,
+            String status,
+            String region,
+            String search,
+            String startDate,
+            String endDate,
+            Pageable pageable) {
+
+        LocalDateTime parsedStartDate = startDate != null ?
+                LocalDate.parse(startDate).atStartOfDay() : null;
+        LocalDateTime parsedEndDate = endDate != null ?
+                LocalDate.parse(endDate).atTime(23, 59, 59) : null;
+
+        return startupRepository.findStartupsWithFilters(
+                industry,
+                status,
+                region,
+                search,
+                parsedStartDate,
+                parsedEndDate,
+                pageable
+        );
     }
 
     public List<Startup> getStartupsWithFilters(

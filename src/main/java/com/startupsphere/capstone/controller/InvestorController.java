@@ -7,6 +7,10 @@ import com.startupsphere.capstone.repository.InvestorRepository;
 import com.startupsphere.capstone.service.InvestorService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,8 +34,14 @@ public class InvestorController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Investor>> getAllInvestors() {
-        return ResponseEntity.ok(investorService.getAllInvestors());
+    public ResponseEntity<Page<Investor>> getAllInvestors(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "investorId") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(investorService.getAllInvestors(pageable));
     }
 
     @GetMapping("/search")

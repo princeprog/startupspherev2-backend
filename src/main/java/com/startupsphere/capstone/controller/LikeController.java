@@ -10,6 +10,10 @@ import com.startupsphere.capstone.repository.StartupRepository;
 import com.startupsphere.capstone.repository.UserRepository;
 import com.startupsphere.capstone.service.LikeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,8 +73,14 @@ public class LikeController {
     }
 
     @GetMapping
-    public List<LikeRequest> getAllLikes() {
-        return likeService.getAllLikes().stream().map(like -> {
+    public ResponseEntity<Page<LikeRequest>> getAllLikes(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "timestamp") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<LikeRequest> likes = likeService.getAllLikes(pageable).map(like -> {
             LikeRequest dto = new LikeRequest();
             dto.setId(like.getId());
             dto.setTimestamp(like.getTimestamp());
@@ -78,7 +88,8 @@ public class LikeController {
             dto.setStartupId(like.getStartup() != null ? like.getStartup().getId() : null);
             dto.setInvestorId(like.getInvestor() != null ? like.getInvestor().getInvestorId() : null);
             return dto;
-        }).toList();
+        });
+        return ResponseEntity.ok(likes);
     }
 
     @GetMapping("/{id}")

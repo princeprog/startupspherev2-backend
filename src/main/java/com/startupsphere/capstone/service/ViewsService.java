@@ -5,6 +5,8 @@ import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.entity.Views;
 import com.startupsphere.capstone.repository.ViewsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -43,6 +45,11 @@ public class ViewsService {
     // Create or update a view
     public Views saveView(Views view) {
         return viewsRepository.save(view);
+    }
+
+    // Get all views with pagination
+    public Page<Views> getAllViews(Pageable pageable) {
+        return viewsRepository.findAll(pageable);
     }
 
     // Get all views

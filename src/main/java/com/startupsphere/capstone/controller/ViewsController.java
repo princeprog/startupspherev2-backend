@@ -5,6 +5,10 @@ import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.entity.Views;
 import com.startupsphere.capstone.service.ViewsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,10 +48,16 @@ public class ViewsController {
         }
     }
 
-    // Get all views
+    // Get all views with pagination
     @GetMapping
-    public ResponseEntity<List<Views>> getAllViews() {
-        List<Views> views = viewsService.getAllViews();
+    public ResponseEntity<Page<Views>> getAllViews(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "timestamp") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Views> views = viewsService.getAllViews(pageable);
         return ResponseEntity.ok(views);
     }
 

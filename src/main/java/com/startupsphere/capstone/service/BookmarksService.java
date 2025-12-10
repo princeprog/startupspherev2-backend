@@ -4,6 +4,8 @@ import com.startupsphere.capstone.entity.Bookmarks;
 import com.startupsphere.capstone.entity.User;
 import com.startupsphere.capstone.repository.BookmarksRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,10 @@ public class BookmarksService {
 
     public List<Bookmarks> getBookmarksByUser(User user) {
         return bookmarksRepository.findByUser(user);
+    }
+
+    public Page<Bookmarks> getAllBookmarks(Pageable pageable) {
+        return bookmarksRepository.findAll(pageable);
     }
 
     public List<Bookmarks> getAllBookmarks() {
