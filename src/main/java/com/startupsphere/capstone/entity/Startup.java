@@ -52,6 +52,10 @@ public class Startup {
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notifications> notifications;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Recents> recents = new ArrayList<>();
+
     @Column(name = "views_count", nullable = false)
     private Integer viewsCount = 0;
 
@@ -743,5 +747,13 @@ public class Startup {
 
     public void setStartupStakeholders(List<StartupStakeholder> startupStakeholders) {
         this.startupStakeholders = startupStakeholders;
+    }
+
+    public List<Recents> getRecents() {
+        return recents;
+    }
+
+    public void setRecents(List<Recents> recents) {
+        this.recents = recents;
     }
 }

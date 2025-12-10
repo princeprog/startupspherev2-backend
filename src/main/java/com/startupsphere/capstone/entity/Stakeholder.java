@@ -1,9 +1,11 @@
 package com.startupsphere.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "stakeholders")
@@ -23,6 +25,9 @@ public class Stakeholder {
     @OneToMany(mappedBy = "stakeholder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StartupStakeholder> startupStakeholders;
 
+        @JsonIgnore
+        @OneToMany(mappedBy = "stakeholder", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<Recents> recents = new ArrayList<>();
     private String phoneNumber;
     private String region;
     private String regionCode;

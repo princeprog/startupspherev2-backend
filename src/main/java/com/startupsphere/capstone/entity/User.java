@@ -40,7 +40,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notifications> notifications;
 
-    
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Recents> recents = new ArrayList<>();
 
     @Column(nullable = false)
     private String firstname;
@@ -79,6 +81,7 @@ public class User implements UserDetails {
         this.bookmarks = new ArrayList<>();
         this.views = new ArrayList<>();
         this.notifications = new ArrayList<>();
+        this.recents = new ArrayList<>();
     }
 
     @Override
@@ -149,6 +152,11 @@ public class User implements UserDetails {
     public void addNotification(Notifications notification) {
         notifications.add(notification);
         notification.setUser(this);
+    }
+
+    public void addRecent(Recents recent) {
+        recents.add(recent);
+        recent.setUser(this);
     }
 
         public String getFirstname() {
