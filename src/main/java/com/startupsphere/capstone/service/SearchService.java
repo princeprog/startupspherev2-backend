@@ -10,6 +10,7 @@ import com.startupsphere.capstone.repository.StakeholderRepository;
 import com.startupsphere.capstone.repository.StartupRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,7 @@ public class SearchService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "searchStartups", key = "#query")
     public SearchResultsDTO search(String query) {
         // Get direct search results
         List<Startup> directStartups = startupRepository.searchByFields(query);

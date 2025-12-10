@@ -2,6 +2,7 @@ package com.startupsphere.capstone.service;
 
 import com.startupsphere.capstone.entity.Startup;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -261,6 +262,7 @@ public class StartupRankingService {
      * @param startups List of startups to rank
      * @return List of startups sorted by ranking
      */
+    @Cacheable(value = "rankings", key = "'all'")
     public List<Startup> rankStartups(List<Startup> startups) {
         return startups.stream()
                 .filter(startup -> "Approved".equalsIgnoreCase(startup.getStatus())) // Filter by status
@@ -275,6 +277,7 @@ public class StartupRankingService {
      * @param industry Industry to filter by
      * @return Ranked list of startups in the specified industry
      */
+    @Cacheable(value = "rankings", key = "'industry-' + #industry")
     public List<Startup> rankStartupsByIndustry(List<Startup> startups, String industry) {
         return startups.stream()
                 .filter(startup -> "Approved".equalsIgnoreCase(startup.getStatus())) // Filter by status
@@ -292,6 +295,7 @@ public class StartupRankingService {
      *                 "engagement", or "overall")
      * @return List of startups sorted by the specified metric
      */
+    @Cacheable(value = "rankings", key = "'metric-' + #metric")
     public List<Startup> rankStartupsByMetric(List<Startup> startups, String metric) {
         Comparator<Startup> comparator;
 

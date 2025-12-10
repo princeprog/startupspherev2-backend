@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import com.startupsphere.capstone.controller.NotificationController;
 import com.startupsphere.capstone.dtos.NotificationRequest;
@@ -33,6 +35,7 @@ public class NotificationService {
     @Autowired
     private UserRepository urepo;
 
+    @CacheEvict(value = "notifications", allEntries = true)
     public Notifications createNotifications(NotificationRequest request) {
         Notifications notification = new Notifications();
         notification.setRemarks(request.getRemarks());
@@ -51,6 +54,7 @@ public class NotificationService {
         return nrepo.save(notification);
     }
 
+    @Cacheable(value = "notifications", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<Notifications> getAllNotifications(Pageable pageable) {
         return nrepo.findAll(pageable);
     }
@@ -59,6 +63,7 @@ public class NotificationService {
         return nrepo.findAll();
     }
 
+    @CacheEvict(value = "notifications", allEntries = true)
     public Notifications updateNotifications(Notifications updatedNotifications, int id) {
         try {
             Notifications existingNotifications = nrepo.findById(id)
@@ -78,6 +83,7 @@ public class NotificationService {
         }
     }
 
+    @CacheEvict(value = "notifications", allEntries = true)
     public boolean deleteNotification(int id) {
         try {
             Notifications notifications = nrepo.findById(id)

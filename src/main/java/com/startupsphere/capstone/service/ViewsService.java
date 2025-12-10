@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.time.Instant;
 import java.time.Month;
@@ -30,6 +32,7 @@ public class ViewsService {
     }
 
     // Create a view
+    @CacheEvict(value = "views", allEntries = true)
     public Views createView(User user, Startup startup) {
         // Check if a view already exists for the same user and startup
         boolean exists = viewsRepository.existsByUserAndStartup(user, startup);
@@ -48,6 +51,7 @@ public class ViewsService {
     }
 
     // Get all views with pagination
+    @Cacheable(value = "views", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<Views> getAllViews(Pageable pageable) {
         return viewsRepository.findAll(pageable);
     }
@@ -63,6 +67,7 @@ public class ViewsService {
     }
 
     // Delete a view by ID
+    @CacheEvict(value = "views", allEntries = true)
     public void deleteView(Long id) {
         if (viewsRepository.existsById(id)) {
             viewsRepository.deleteById(id);

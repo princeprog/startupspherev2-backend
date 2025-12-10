@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,6 +23,7 @@ public class LikeService {
     @Autowired
     private LikeRepository likeRepository;
 
+    @CacheEvict(value = "likes", allEntries = true)
     public String toggleLike(Like like) {
         if (like.getStartup() != null) {
             Optional<Like> existingLike = likeRepository.findByUserIdAndStartupId(
@@ -45,6 +48,7 @@ public class LikeService {
         return "Like added";
     }
 
+    @Cacheable(value = "likes", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<Like> getAllLikes(Pageable pageable) {
         return likeRepository.findAll(pageable);
     }

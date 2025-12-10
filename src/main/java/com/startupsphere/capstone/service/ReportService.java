@@ -7,6 +7,8 @@ import com.startupsphere.capstone.repository.ReportRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,7 @@ public class ReportService {
         this.reportRepository = reportRepository;
     }
 
+    @CacheEvict(value = "reports", allEntries = true)
     public Report createReport(ReportDto dto, User user) {
         Report report = new Report();
         report.setName(dto.getName());
@@ -30,6 +33,7 @@ public class ReportService {
         return reportRepository.save(report);
     }
 
+    @Cacheable(value = "reports", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<Report> getAllReports(Pageable pageable) {
         return reportRepository.findAll(pageable);
     }
@@ -40,6 +44,7 @@ public class ReportService {
         return reports;
     }
 
+    @CacheEvict(value = "reports", allEntries = true)
     public Report updateReport(Integer reportId, ReportDto dto, User currentUser) {
         Report existing = reportRepository.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("Report not found"));

@@ -33,6 +33,9 @@ import java.util.Random;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 
 @Service
 public class StartupService {
@@ -66,6 +69,7 @@ public class StartupService {
     }
 
     @Transactional
+    @CacheEvict(value = {"startups", "submittedStartups", "filteredStartups"}, allEntries = true)
     public Startup createStartup(Startup startup) {
         logger.info("Saving startup: {}", startup.getCompanyName());
 
@@ -106,6 +110,7 @@ public class StartupService {
         return startupRepository.save(draft);
     }
 
+    @Cacheable(value = "startups", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<Startup> getAllStartups(Pageable pageable) {
         return startupRepository.findAll(pageable);
     }
@@ -114,11 +119,13 @@ public class StartupService {
         return startupRepository.findAll();
     }
 
+    @Cacheable(value = "startupById", key = "#id")
     public Optional<Startup> getStartupById(Long id) {
         return startupRepository.findById(id);
     }
 
     @Transactional
+    @CacheEvict(value = {"startups", "startupById", "approvedStartups", "submittedStartups", "emailVerifiedStartups", "searchStartups", "filteredStartups"}, allEntries = true)
     public Startup updateStartup(Long id, Startup updatedStartup) {
         return startupRepository.findById(id)
                 .map(startup -> {
