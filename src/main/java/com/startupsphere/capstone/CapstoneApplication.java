@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @EnableCaching
-public class CapstoneApplication {
+public class    CapstoneApplication {
 
     public static void main(String[] args) {
         // Load environment variables from .env or system environment

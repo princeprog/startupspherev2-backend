@@ -181,15 +181,17 @@ public class StartupRankingController {
     }
 
     private List<Map<String, Object>> generateGrowthData(List<Startup> startups) {
-        Map<String, Long> industriesCount = startups.stream()
+        // Group all startups by industry and count them
+        Map<String, Long> industryCount = startups.stream()
                 .filter(s -> s.getIndustry() != null && !s.getIndustry().isEmpty())
                 .collect(Collectors.groupingBy(
                         Startup::getIndustry,
                         Collectors.counting()));
 
-        List<String> topIndustries = industriesCount.entrySet().stream()
+        // Get top industries by startup count (limit to top 5)
+        List<String> industriesList = industryCount.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .limit(3)
+                .limit(5)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
@@ -200,18 +202,22 @@ public class StartupRankingController {
             YearMonth month = YearMonth.from(today.minusMonths(i));
             String monthName = month.format(DateTimeFormatter.ofPattern("MMM"));
 
-            Map<String, Object> monthData = new HashMap<>();
+            Map<String, Object> monthData = new LinkedHashMap<>();
             monthData.put("name", monthName);
 
-            for (String industry : topIndustries) {
+            // Add each industry's growth data
+            for (String industry : industriesList) {
                 double avgGrowthRate = startups.stream()
                         .filter(s -> industry.equals(s.getIndustry()))
                         .mapToDouble(Startup::getAverageStartupGrowthRate)
                         .average()
                         .orElse(0.0);
 
-                double scaleFactor = 1.0 + (0.1 * i); // Older months have slightly lower values
-                monthData.put(industry, Math.round(avgGrowthRate * scaleFactor));
+                // Apply scaling based on month position
+                double scaleFactor = 1.0 + (0.1 * i);
+                long value = Math.round(avgGrowthRate * scaleFactor);
+                
+                monthData.put(industry, value);
             }
 
             growthData.add(monthData);
